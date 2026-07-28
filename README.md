@@ -4,8 +4,8 @@ Premium fashion e-commerce platform — a luxury storefront and a premium
 dark-mode admin dashboard, built as a single production-grade Next.js
 application backed by Supabase.
 
-> **Status:** Phase 0 complete (project foundation). Feature phases have not
-> started yet. See [`CHANGELOG.md`](./CHANGELOG.md).
+> **Status:** Phase 1 complete (core data layer: catalog + inventory). See
+> [`CHANGELOG.md`](./CHANGELOG.md).
 
 ---
 
@@ -122,6 +122,42 @@ Three strictly separated clients live in `src/lib/supabase/`:
 - **`admin.ts`** — service-role, **bypasses RLS**, `server-only`. Never
   importable by Client Components (build error if attempted). Trusted server
   flows only (e.g. Razorpay webhook).
+
+---
+
+## Database
+
+The schema lives as SQL migrations in `supabase/migrations/` (the source of
+truth) and is applied to the **hosted** Supabase project — local Docker is not
+used.
+
+**Catalog:** `categories` (single-level) · `collections` +
+`collection_products` (M:N) · `products` (draft/active/archived, never deleted)
+· `product_media` · `product_variants`.
+**Inventory:** `inventory` (1:1 with variants) · `inventory_movements` (ledger).
+
+Key invariants are enforced in Postgres, not just in the app:
+
+- Money is integer paise (`bigint`); CHECK constraints keep it `>= 0`.
+- `inventory.quantity` can only change via **`adjust_inventory()`** — a
+  row-locking function that prevents negative stock and writes a ledger entry.
+  A trigger blocks every other write path.
+- Products archive/restore only; an `archived_at` consistency CHECK ties the
+  timestamp to the `archived` status.
+- RLS: the public reads only the active catalog; raw inventory and the ledger
+  are staff-only.
+
+**Apply migrations** (linked project, no Docker):
+
+```bash
+supabase db push
+```
+
+**Regenerate types** after any schema change:
+
+```bash
+supabase gen types typescript --linked --schema public > src/types/database.ts
+```
 
 ---
 
