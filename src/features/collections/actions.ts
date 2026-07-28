@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { runAction } from "@/lib/errors";
+import { runStaffAction } from "@/lib/auth/guard";
 import { type Result } from "@/lib/result";
 import { uuidSchema } from "@/lib/validation/common";
 
@@ -20,7 +20,7 @@ function revalidateCollection(id?: string) {
 export async function createCollectionAction(
   input: unknown,
 ): Promise<Result<Collection>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const values = collectionFormSchema.parse(input);
     const collection = await service.createCollection(values);
     revalidateCollection(collection.id);
@@ -32,7 +32,7 @@ export async function updateCollectionAction(
   id: unknown,
   input: unknown,
 ): Promise<Result<Collection>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const collectionId = uuidSchema.parse(id);
     const values = collectionFormSchema.parse(input);
     const collection = await service.updateCollection(collectionId, values);
@@ -44,7 +44,7 @@ export async function updateCollectionAction(
 export async function archiveCollectionAction(
   id: unknown,
 ): Promise<Result<Collection>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const collection = await service.archiveCollection(uuidSchema.parse(id));
     revalidateCollection(collection.id);
     return collection;
@@ -54,7 +54,7 @@ export async function archiveCollectionAction(
 export async function restoreCollectionAction(
   id: unknown,
 ): Promise<Result<Collection>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const collection = await service.restoreCollection(uuidSchema.parse(id));
     revalidateCollection(collection.id);
     return collection;
@@ -65,7 +65,7 @@ export async function setCollectionProductsAction(
   id: unknown,
   input: unknown,
 ): Promise<Result<null>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const collectionId = uuidSchema.parse(id);
     const { productIds } = collectionProductsSchema.parse(input);
     await service.setCollectionProducts(collectionId, productIds);

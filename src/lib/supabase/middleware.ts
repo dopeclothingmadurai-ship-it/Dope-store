@@ -4,12 +4,31 @@ import { NextResponse, type NextRequest } from "next/server";
 import { clientEnv } from "@/lib/env/client";
 import { type Database } from "@/types/database";
 
+/** Build a redirect that carries the refreshed auth cookies. */
+function redirectWithCookies(
+  request: NextRequest,
+  source: NextResponse,
+  pathname: string,
+  searchParams?: Record<string, string>,
+): NextResponse {
+  const url = request.nextUrl.clone();
+  url.pathname = pathname;
+  url.search = "";
+  for (const [key, value] of Object.entries(searchParams ?? {})) {
+    url.searchParams.set(key, value);
+  }
+  const response = NextResponse.redirect(url);
+  for (const cookie of source.cookies.getAll()) {
+    response.cookies.set(cookie);
+  }
+  return response;
+}
+
 /**
- * Refreshes the Supabase auth session on every matched request and keeps the
- * session cookies in sync between the request and the response.
- *
- * This only maintains the session. Route protection (e.g. gating `/admin`) is
- * layered on top in a later phase — the session must be fresh first.
+ * Refreshes the Supabase auth session on every matched request and gates the
+ * `/admin` area: unauthenticated users are sent to `/login`, and authenticated
+ * non-staff users are rejected. This is the per-request guard; the admin layout
+ * and each admin Server Action re-check as defense in depth.
  */
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -38,7 +57,23 @@ export async function updateSession(request: NextRequest) {
   // IMPORTANT: do not run any code between creating the client and calling
   // `getUser()`. A subtle bug here can randomly sign users out, because the
   // refreshed token would not be written back to the response cookies.
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (request.nextUrl.pathname.startsWith("/admin")) {
+    if (!user) {
+      return redirectWithCookies(request, supabaseResponse, "/login", {
+        next: request.nextUrl.pathname,
+      });
+    }
+    const { data: staff } = await supabase.rpc("is_staff");
+    if (staff !== true) {
+      return redirectWithCookies(request, supabaseResponse, "/login", {
+        error: "unauthorized",
+      });
+    }
+  }
 
   return supabaseResponse;
 }

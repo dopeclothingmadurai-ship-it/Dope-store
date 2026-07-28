@@ -37,6 +37,13 @@ export class NotFoundError extends AppError {
   }
 }
 
+export class AuthError extends AppError {
+  constructor(message = "You must be signed in.") {
+    super("unauthorized", message);
+    this.name = "AuthError";
+  }
+}
+
 export class ConflictError extends AppError {
   constructor(message: string) {
     super("conflict", message);

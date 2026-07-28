@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { LogOut } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { ADMIN_NAV } from "@/config/admin-nav";
+import { signOutAction } from "@/features/auth/actions";
 import { cn } from "@/lib/utils";
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
@@ -60,18 +63,55 @@ function Brand() {
   );
 }
 
-export function AdminSidebar() {
+function UserFooter({ email }: { email: string }) {
+  return (
+    <div className="flex flex-col gap-2 border-t pt-3">
+      {email ? (
+        <p
+          className="text-muted-foreground truncate px-3 text-xs"
+          title={email}
+        >
+          {email}
+        </p>
+      ) : null}
+      <form action={signOutAction}>
+        <Button
+          type="submit"
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground hover:text-foreground w-full justify-start"
+        >
+          <LogOut className="size-4" />
+          Sign out
+        </Button>
+      </form>
+    </div>
+  );
+}
+
+export function AdminSidebar({ userEmail }: { userEmail: string }) {
   return (
     <>
       {/* Desktop sidebar */}
       <aside className="bg-sidebar hidden w-60 shrink-0 flex-col gap-6 border-r px-3 py-5 md:flex">
         <Brand />
         <NavLinks />
+        <div className="mt-auto">
+          <UserFooter email={userEmail} />
+        </div>
       </aside>
 
       {/* Mobile top bar */}
       <div className="bg-sidebar sticky top-0 z-30 flex flex-col gap-3 border-b px-3 py-3 md:hidden">
-        <Brand />
+        <div className="flex items-center justify-between">
+          <Brand />
+          <form action={signOutAction}>
+            <Button type="submit" variant="ghost" size="icon-sm">
+              <LogOut className="size-4" />
+              <span className="sr-only">Sign out</span>
+            </Button>
+          </form>
+        </div>
         <div className="overflow-x-auto">
           <NavLinks />
         </div>

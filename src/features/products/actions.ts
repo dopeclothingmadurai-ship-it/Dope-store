@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { runAction } from "@/lib/errors";
+import { runStaffAction } from "@/lib/auth/guard";
 import { type Result } from "@/lib/result";
 import { uuidSchema } from "@/lib/validation/common";
 
@@ -33,7 +33,7 @@ function revalidateProduct(productId?: string) {
 export async function createProductAction(
   input: unknown,
 ): Promise<Result<Product>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const values = productFormSchema.parse(input);
     const product = await service.createProduct(values);
     revalidateProduct(product.id);
@@ -45,7 +45,7 @@ export async function updateProductAction(
   id: unknown,
   input: unknown,
 ): Promise<Result<Product>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const productId = uuidSchema.parse(id);
     const values = productFormSchema.parse(input);
     const product = await service.updateProduct(productId, values);
@@ -57,7 +57,7 @@ export async function updateProductAction(
 export async function archiveProductAction(
   id: unknown,
 ): Promise<Result<Product>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const product = await service.archiveProduct(uuidSchema.parse(id));
     revalidateProduct(product.id);
     return product;
@@ -67,7 +67,7 @@ export async function archiveProductAction(
 export async function restoreProductAction(
   id: unknown,
 ): Promise<Result<Product>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const product = await service.restoreProduct(uuidSchema.parse(id));
     revalidateProduct(product.id);
     return product;
@@ -81,7 +81,7 @@ export async function createVariantAction(
   input: unknown,
   autoSku: unknown,
 ): Promise<Result<ProductVariant>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const id = uuidSchema.parse(productId);
     const values = variantFormSchema.parse(input);
     const auto = z.boolean().parse(autoSku);
@@ -96,7 +96,7 @@ export async function updateVariantAction(
   variantId: unknown,
   input: unknown,
 ): Promise<Result<ProductVariant>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const pid = uuidSchema.parse(productId);
     const vid = uuidSchema.parse(variantId);
     const values = variantFormSchema.parse(input);
@@ -110,7 +110,7 @@ export async function deleteVariantAction(
   productId: unknown,
   variantId: unknown,
 ): Promise<Result<null>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const pid = uuidSchema.parse(productId);
     await service.deleteVariant(uuidSchema.parse(variantId));
     revalidateProduct(pid);
@@ -125,7 +125,7 @@ export async function adjustInventoryAction(
   variantId: unknown,
   input: unknown,
 ): Promise<Result<Inventory>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const pid = uuidSchema.parse(productId);
     const vid = uuidSchema.parse(variantId);
     const values = inventoryAdjustSchema.parse(input);
@@ -141,7 +141,7 @@ export async function addProductMediaAction(
   productId: unknown,
   input: unknown,
 ): Promise<Result<ProductMedia>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const id = uuidSchema.parse(productId);
     const values = productMediaSchema.parse(input);
     const media = await service.addProductMedia(id, values);
@@ -154,7 +154,7 @@ export async function reorderProductMediaAction(
   productId: unknown,
   orderedIds: unknown,
 ): Promise<Result<null>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const id = uuidSchema.parse(productId);
     const ids = z.array(uuidSchema).parse(orderedIds);
     await service.reorderProductMedia(id, ids);
@@ -167,7 +167,7 @@ export async function setPrimaryProductMediaAction(
   productId: unknown,
   mediaId: unknown,
 ): Promise<Result<null>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const id = uuidSchema.parse(productId);
     await service.setPrimaryProductMedia(id, uuidSchema.parse(mediaId));
     revalidateProduct(id);
@@ -179,7 +179,7 @@ export async function deleteProductMediaAction(
   productId: unknown,
   mediaId: unknown,
 ): Promise<Result<null>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const id = uuidSchema.parse(productId);
     await service.deleteProductMedia(uuidSchema.parse(mediaId));
     revalidateProduct(id);

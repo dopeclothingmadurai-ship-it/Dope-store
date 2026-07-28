@@ -5,6 +5,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Phase 3 — Admin authentication & authorization
+
+Secures the admin panel. Reuses the existing `is_staff()` system (no new
+permission model).
+
+**Added**
+
+- Email/password login at `/login` (Supabase Auth) with validation, a loading
+  state, and inline error handling. Only staff accounts are allowed — a valid
+  but non-staff sign-in is rejected and signed back out.
+- Logout from the admin sidebar (shows the signed-in user's email).
+- Auth helpers (`src/lib/auth/`): `requireStaff` / `getAuthUser` /
+  `isCurrentUserStaff`, and `runStaffAction` — a `runAction` wrapper that gates
+  every admin mutation on staff.
+- `features/auth` module (schema, actions, login form).
+
+**Changed**
+
+- Middleware now gates `/admin`: unauthenticated → `/login?next=…`,
+  authenticated non-staff → `/login?error=unauthorized`. Session refresh is
+  preserved. The admin layout re-checks the session (defense in depth) and
+  surfaces the user; every admin Server Action now runs through
+  `runStaffAction`.
+- Admin data operations still use the service-role client behind the gate —
+  existing admin functionality is unchanged.
+
+**Verified**
+
+- Unauthenticated `/admin` → 307 to `/login`; login works and lands in the
+  admin; session persists across refresh; logout returns to `/login`; a
+  non-staff account is rejected with a clear message. typecheck, lint, build
+  all pass.
+
 ### Automatic SKU generation
 
 - New reusable, pure SKU utility (`src/lib/sku.ts`) producing

@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 
-import { runAction } from "@/lib/errors";
+import { runStaffAction } from "@/lib/auth/guard";
 import { type Result } from "@/lib/result";
 
 import { type SignedUpload, createProductMediaUpload } from "./service";
@@ -15,7 +15,7 @@ const uploadUrlSchema = z.object({
 export async function createMediaUploadUrlAction(
   input: unknown,
 ): Promise<Result<SignedUpload>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const { folder, fileName } = uploadUrlSchema.parse(input);
     return createProductMediaUpload(folder, fileName);
   });

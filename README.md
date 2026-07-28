@@ -175,8 +175,10 @@ Every mutation is a Zod-validated Server Action returning `Result<T>`; business
 logic lives in each feature's `service.ts`; inventory changes go only through
 `adjust_inventory()`.
 
-> **Auth:** admin routes are not yet protected — that lands in Phase 3. Until
-> then, admin Server Actions and reads use the server-side service-role client.
+> **Auth:** `/admin` is protected (Phase 3). Sign in at `/login` with a staff
+> account — the middleware gates every admin request (auth + `is_staff()`), the
+> layout re-checks, and admin Server Actions run through `runStaffAction`. Grant
+> staff by inserting a `staff_profiles` row for an auth user's id.
 
 ---
 

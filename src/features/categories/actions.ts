@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { runAction } from "@/lib/errors";
+import { runStaffAction } from "@/lib/auth/guard";
 import { type Result } from "@/lib/result";
 import { uuidSchema } from "@/lib/validation/common";
 
@@ -16,7 +16,7 @@ const CATALOG_PATH = "/admin/catalog/categories";
 export async function createCategoryAction(
   input: unknown,
 ): Promise<Result<Category>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const values = categoryFormSchema.parse(input);
     const category = await service.createCategory(values);
     revalidatePath(CATALOG_PATH);
@@ -28,7 +28,7 @@ export async function updateCategoryAction(
   id: unknown,
   input: unknown,
 ): Promise<Result<Category>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const categoryId = uuidSchema.parse(id);
     const values = categoryFormSchema.parse(input);
     const category = await service.updateCategory(categoryId, values);
@@ -40,7 +40,7 @@ export async function updateCategoryAction(
 export async function archiveCategoryAction(
   id: unknown,
 ): Promise<Result<Category>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const category = await service.archiveCategory(uuidSchema.parse(id));
     revalidatePath(CATALOG_PATH);
     return category;
@@ -50,7 +50,7 @@ export async function archiveCategoryAction(
 export async function restoreCategoryAction(
   id: unknown,
 ): Promise<Result<Category>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const category = await service.restoreCategory(uuidSchema.parse(id));
     revalidatePath(CATALOG_PATH);
     return category;
@@ -60,7 +60,7 @@ export async function restoreCategoryAction(
 export async function reorderCategoriesAction(
   orderedIds: unknown,
 ): Promise<Result<null>> {
-  return runAction(async () => {
+  return runStaffAction(async () => {
     const ids = z.array(uuidSchema).parse(orderedIds);
     await service.reorderCategories(ids);
     revalidatePath(CATALOG_PATH);
