@@ -84,6 +84,7 @@ export function ProductVariantsManager({
                 <TableHead>Size</TableHead>
                 <TableHead>Color</TableHead>
                 <TableHead>Price</TableHead>
+                <TableHead>Location</TableHead>
                 <TableHead className="text-right">On hand</TableHead>
                 <TableHead className="text-right">Reserved</TableHead>
                 <TableHead className="text-right">Low-stock</TableHead>
@@ -109,6 +110,9 @@ export function ProductVariantsManager({
                       ) : (
                         formatPaise(variant.price_override)
                       )}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {variant.inventory?.location || "—"}
                     </TableCell>
                     <TableCell className="text-right">
                       <span

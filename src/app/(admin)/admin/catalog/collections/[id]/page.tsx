@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/admin/link-button";
 import { CollectionProductsEditor } from "@/features/collections/components/collection-products-editor";
 import {
   getCollection,
@@ -29,14 +28,14 @@ export default async function CollectionDetailPage({
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <Button
+        <LinkButton
           variant="ghost"
           size="sm"
           className="-ml-2"
-          render={<Link href="/admin/catalog/collections" />}
+          href="/admin/catalog/collections"
         >
           <ArrowLeft /> Collections
-        </Button>
+        </LinkButton>
         <h1 className="font-heading text-xl font-semibold tracking-tight">
           {collection.name}
         </h1>

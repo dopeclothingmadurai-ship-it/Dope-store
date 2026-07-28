@@ -7,6 +7,9 @@ import { useState } from "react";
 import {
   Archive,
   ArchiveRestore,
+  ArrowDown,
+  ArrowUp,
+  ChevronsUpDown,
   ImageIcon,
   Package,
   Pencil,
@@ -18,6 +21,7 @@ import { toast } from "sonner";
 
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { EmptyState } from "@/components/admin/empty-state";
+import { LinkButton } from "@/components/admin/link-button";
 import { PageHeader } from "@/components/admin/page-header";
 import { ProductStatusBadge } from "@/components/admin/status-badge";
 import { Button } from "@/components/ui/button";
@@ -33,7 +37,11 @@ import {
 import { formatPaise } from "@/lib/money";
 
 import { archiveProductAction, restoreProductAction } from "../actions";
-import { type ProductListItem, type ProductListResult } from "../types";
+import {
+  type ProductListItem,
+  type ProductListResult,
+  type ProductSort,
+} from "../types";
 
 export function ProductsManager({
   result,
@@ -52,14 +60,41 @@ export function ProductsManager({
 
   const totalPages = Math.max(1, Math.ceil(result.total / result.pageSize));
 
-  function navigate(next: { page?: number; q?: string }) {
+  function navigate(next: {
+    page?: number;
+    q?: string;
+    sort?: ProductSort;
+    dir?: "asc" | "desc";
+  }) {
     const params = new URLSearchParams();
     const q = next.q ?? search;
     if (q) params.set("q", q);
     const page = next.page ?? 1;
     if (page > 1) params.set("page", String(page));
+    const sort = next.sort ?? result.sort;
+    const dir = next.dir ?? result.dir;
+    if (sort !== "created" || dir !== "desc") {
+      params.set("sort", sort);
+      params.set("dir", dir);
+    }
     const query = params.toString();
     router.push(`/admin/catalog/products${query ? `?${query}` : ""}`);
+  }
+
+  function toggleSort(column: ProductSort) {
+    const dir: "asc" | "desc" =
+      result.sort === column && result.dir === "asc" ? "desc" : "asc";
+    navigate({ sort: column, dir, page: 1 });
+  }
+
+  function SortIcon({ column }: { column: ProductSort }) {
+    if (result.sort !== column)
+      return <ChevronsUpDown className="text-muted-foreground/50 size-3.5" />;
+    return result.dir === "asc" ? (
+      <ArrowUp className="size-3.5" />
+    ) : (
+      <ArrowDown className="size-3.5" />
+    );
   }
 
   async function runConfirm() {
@@ -85,9 +120,9 @@ export function ProductsManager({
         title="Products"
         description="Create and manage your catalog."
         actions={
-          <Button render={<Link href="/admin/catalog/products/new" />}>
+          <LinkButton href="/admin/catalog/products/new">
             <Plus /> New product
-          </Button>
+          </LinkButton>
         }
       />
 
@@ -118,9 +153,9 @@ export function ProductsManager({
           }
           action={
             search ? undefined : (
-              <Button render={<Link href="/admin/catalog/products/new" />}>
+              <LinkButton href="/admin/catalog/products/new">
                 <Plus /> New product
-              </Button>
+              </LinkButton>
             )
           }
         />
@@ -131,10 +166,37 @@ export function ProductsManager({
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-16">Image</TableHead>
-                  <TableHead>Title</TableHead>
+                  <TableHead>
+                    <button
+                      type="button"
+                      onClick={() => toggleSort("title")}
+                      className="hover:text-foreground -ml-1 flex items-center gap-1 rounded px-1"
+                    >
+                      Title
+                      <SortIcon column="title" />
+                    </button>
+                  </TableHead>
                   <TableHead>Category</TableHead>
-                  <TableHead className="text-right">Price</TableHead>
-                  <TableHead className="w-24">Status</TableHead>
+                  <TableHead className="text-right">
+                    <button
+                      type="button"
+                      onClick={() => toggleSort("price")}
+                      className="hover:text-foreground ml-auto flex items-center gap-1 rounded px-1"
+                    >
+                      Price
+                      <SortIcon column="price" />
+                    </button>
+                  </TableHead>
+                  <TableHead className="w-24">
+                    <button
+                      type="button"
+                      onClick={() => toggleSort("status")}
+                      className="hover:text-foreground -ml-1 flex items-center gap-1 rounded px-1"
+                    >
+                      Status
+                      <SortIcon column="status" />
+                    </button>
+                  </TableHead>
                   <TableHead className="w-24 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -179,18 +241,14 @@ export function ProductsManager({
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
-                        <Button
+                        <LinkButton
                           size="icon-sm"
                           variant="ghost"
-                          render={
-                            <Link
-                              href={`/admin/catalog/products/${product.id}`}
-                            />
-                          }
+                          href={`/admin/catalog/products/${product.id}`}
                         >
                           <Pencil />
                           <span className="sr-only">Edit</span>
-                        </Button>
+                        </LinkButton>
                         {product.status === "archived" ? (
                           <Button
                             size="icon-sm"

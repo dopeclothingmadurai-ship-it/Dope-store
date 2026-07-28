@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
@@ -15,6 +14,7 @@ import { toast } from "sonner";
 
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { EmptyState } from "@/components/admin/empty-state";
+import { LinkButton } from "@/components/admin/link-button";
 import { PageHeader } from "@/components/admin/page-header";
 import { ArchivedBadge } from "@/components/admin/status-badge";
 import { Badge } from "@/components/ui/badge";
@@ -130,17 +130,13 @@ export function CollectionsManager({
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <Button
+                      <LinkButton
                         size="sm"
                         variant="outline"
-                        render={
-                          <Link
-                            href={`/admin/catalog/collections/${collection.id}`}
-                          />
-                        }
+                        href={`/admin/catalog/collections/${collection.id}`}
                       >
                         Products
-                      </Button>
+                      </LinkButton>
                       <Button
                         size="icon-sm"
                         variant="ghost"

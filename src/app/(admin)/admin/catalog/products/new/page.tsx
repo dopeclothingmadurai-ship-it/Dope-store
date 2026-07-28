@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
+import { LinkButton } from "@/components/admin/link-button";
 import { PageHeader } from "@/components/admin/page-header";
-import { Button } from "@/components/ui/button";
 import { listCategoryOptions } from "@/features/categories/queries";
 import { listCollectionOptions } from "@/features/collections/queries";
 import { ProductForm } from "@/features/products/components/product-form";
@@ -18,14 +17,14 @@ export default async function NewProductPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <Button
+        <LinkButton
           variant="ghost"
           size="sm"
           className="-ml-2"
-          render={<Link href="/admin/catalog/products" />}
+          href="/admin/catalog/products"
         >
           <ArrowLeft /> Products
-        </Button>
+        </LinkButton>
         <PageHeader
           title="New product"
           description="Create the product, then add images, variants and stock."

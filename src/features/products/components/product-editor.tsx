@@ -1,18 +1,19 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Archive, ArchiveRestore, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
+import { LinkButton } from "@/components/admin/link-button";
 import { ProductStatusBadge } from "@/components/admin/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 import { archiveProductAction, restoreProductAction } from "../actions";
-import { type ProductDetail } from "../types";
+import { type InventoryMovementItem, type ProductDetail } from "../types";
+import { InventoryHistory } from "./inventory-history";
 import { ProductForm } from "./product-form";
 import { ProductMediaManager } from "./product-media-manager";
 import { ProductVariantsManager } from "./product-variants-manager";
@@ -23,10 +24,12 @@ export function ProductEditor({
   product,
   categories,
   collections,
+  movements,
 }: {
   product: ProductDetail;
   categories: Option[];
   collections: Option[];
+  movements: InventoryMovementItem[];
 }) {
   const router = useRouter();
   const [confirm, setConfirm] = useState<"archive" | "restore" | null>(null);
@@ -56,14 +59,14 @@ export function ProductEditor({
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
-          <Button
+          <LinkButton
             variant="ghost"
             size="sm"
             className="-ml-2"
-            render={<Link href="/admin/catalog/products" />}
+            href="/admin/catalog/products"
           >
             <ArrowLeft /> Products
-          </Button>
+          </LinkButton>
           <div className="flex items-center gap-2">
             <h1 className="font-heading text-xl font-semibold tracking-tight">
               {product.title}
@@ -108,6 +111,7 @@ export function ProductEditor({
             productId={product.id}
             variants={product.variants}
           />
+          <InventoryHistory movements={movements} />
         </div>
       )}
 

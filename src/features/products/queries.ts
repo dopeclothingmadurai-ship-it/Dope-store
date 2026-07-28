@@ -5,30 +5,46 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 import {
   type AssignableProduct,
+  type InventoryMovementItem,
   type ProductDetail,
   type ProductListResult,
+  type ProductSort,
   type VariantWithInventory,
 } from "./types";
 
 export const PRODUCTS_PAGE_SIZE = 20;
 
-/** Paginated, searchable product list enriched with category name + primary image. */
+const SORT_COLUMNS: Record<
+  ProductSort,
+  "title" | "base_price" | "status" | "created_at"
+> = {
+  title: "title",
+  price: "base_price",
+  status: "status",
+  created: "created_at",
+};
+
+/** Paginated, searchable, sortable product list enriched with category + image. */
 export async function listProducts(params: {
   page?: number;
   search?: string;
+  sort?: ProductSort;
+  dir?: "asc" | "desc";
 }): Promise<ProductListResult> {
   const db = createAdminClient();
   const page = Math.max(1, params.page ?? 1);
   const pageSize = PRODUCTS_PAGE_SIZE;
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
+  const sort: ProductSort = params.sort ?? "created";
+  const ascending = params.dir === "asc";
 
   let query = db.from("products").select("*", { count: "exact" });
   const search = params.search?.trim();
   if (search) query = query.ilike("title", `%${search}%`);
 
   const { data, error, count } = await query
-    .order("created_at", { ascending: false })
+    .order(SORT_COLUMNS[sort], { ascending })
     .range(from, to);
   if (error) throw fromPostgrestError(error);
 
@@ -79,7 +95,42 @@ export async function listProducts(params: {
     total: count ?? 0,
     page,
     pageSize,
+    sort,
+    dir: ascending ? "asc" : "desc",
   };
+}
+
+/** Recent inventory movements for every variant of a product (audit history). */
+export async function listProductInventoryMovements(
+  productId: string,
+  limit = 50,
+): Promise<InventoryMovementItem[]> {
+  const db = createAdminClient();
+
+  const { data: variants, error: variantsError } = await db
+    .from("product_variants")
+    .select("id, sku")
+    .eq("product_id", productId);
+  if (variantsError) throw fromPostgrestError(variantsError);
+  if (variants.length === 0) return [];
+
+  const skuByVariant = new Map(variants.map((v) => [v.id, v.sku]));
+
+  const { data, error } = await db
+    .from("inventory_movements")
+    .select("*")
+    .in(
+      "variant_id",
+      variants.map((v) => v.id),
+    )
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw fromPostgrestError(error);
+
+  return data.map((movement) => ({
+    ...movement,
+    sku: skuByVariant.get(movement.variant_id) ?? "—",
+  }));
 }
 
 /** Full product detail for the editor: media, variants+inventory, collections. */

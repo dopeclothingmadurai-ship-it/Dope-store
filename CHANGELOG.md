@@ -5,6 +5,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Phase 2 — Admin Catalog Foundation (enhancements)
+
+Additive polish on top of the catalog module, continuing from the prior commit.
+
+**Added**
+
+- Top navigation bar with breadcrumbs on every admin route
+  (`components/admin/breadcrumbs.tsx`).
+- Route-level loading skeleton for the catalog pages (`catalog/loading.tsx`).
+- Product list **column sorting** (Title / Price / Status) via URL params, on
+  top of the existing search + pagination.
+- Category list **search** and **reorder** (move up/down through
+  `reorder_categories`).
+- Inventory **Location** column on the variants table, and an **Inventory
+  history** panel on the product editor showing every `adjust_inventory()`
+  movement (date, SKU, change, reason, on-hand after, reference).
+- `components/admin/link-button.tsx` — a `Link` styled as a button, replacing
+  `<Button render={<Link/>}>` so navigation renders real anchors (removes Base
+  UI's native-button warning across the admin).
+
+**Verified**
+
+- `typecheck`, `lint`, `format:check`, and `build` all pass. Live UI check:
+  breadcrumbs, sortable headers, Location column, and inventory history all
+  render correctly (seeded product exercised `adjust_inventory()`; test data
+  cleaned up).
+
 ### Phase 2 — Admin Catalog Management
 
 A complete, production-ready admin catalog module under `/admin/catalog`

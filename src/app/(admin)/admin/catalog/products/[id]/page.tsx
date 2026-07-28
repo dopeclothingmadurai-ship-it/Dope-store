@@ -3,7 +3,10 @@ import { notFound } from "next/navigation";
 import { listCategoryOptions } from "@/features/categories/queries";
 import { listCollectionOptions } from "@/features/collections/queries";
 import { ProductEditor } from "@/features/products/components/product-editor";
-import { getProductDetail } from "@/features/products/queries";
+import {
+  getProductDetail,
+  listProductInventoryMovements,
+} from "@/features/products/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -13,10 +16,11 @@ export default async function EditProductPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [product, categories, collections] = await Promise.all([
+  const [product, categories, collections, movements] = await Promise.all([
     getProductDetail(id),
     listCategoryOptions(),
     listCollectionOptions(),
+    listProductInventoryMovements(id),
   ]);
 
   if (!product) notFound();
@@ -26,6 +30,7 @@ export default async function EditProductPage({
       product={product}
       categories={categories}
       collections={collections}
+      movements={movements}
     />
   );
 }

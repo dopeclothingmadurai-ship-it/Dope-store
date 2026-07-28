@@ -4,6 +4,12 @@ export type Product = Tables<"products">;
 export type ProductVariant = Tables<"product_variants">;
 export type ProductMedia = Tables<"product_media">;
 export type Inventory = Tables<"inventory">;
+export type InventoryMovement = Tables<"inventory_movements">;
+
+/** An inventory movement joined with its variant SKU, for the history view. */
+export type InventoryMovementItem = InventoryMovement & { sku: string };
+
+export type ProductSort = "title" | "price" | "status" | "created";
 
 export type VariantWithInventory = ProductVariant & {
   inventory: Inventory | null;
@@ -25,6 +31,8 @@ export type ProductListResult = {
   total: number;
   page: number;
   pageSize: number;
+  sort: ProductSort;
+  dir: "asc" | "desc";
 };
 
 /** Minimal product option used by the collection assignment picker. */
