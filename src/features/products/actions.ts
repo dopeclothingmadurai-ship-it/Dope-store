@@ -79,11 +79,13 @@ export async function restoreProductAction(
 export async function createVariantAction(
   productId: unknown,
   input: unknown,
+  autoSku: unknown,
 ): Promise<Result<ProductVariant>> {
   return runAction(async () => {
     const id = uuidSchema.parse(productId);
     const values = variantFormSchema.parse(input);
-    const variant = await service.createVariant(id, values);
+    const auto = z.boolean().parse(autoSku);
+    const variant = await service.createVariant(id, values, auto);
     revalidateProduct(id);
     return variant;
   });

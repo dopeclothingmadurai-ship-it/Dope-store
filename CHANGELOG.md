@@ -5,6 +5,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Automatic SKU generation
+
+- New reusable, pure SKU utility (`src/lib/sku.ts`) producing
+  `DS-{PRODUCTCODE}-{COLOR}-{SIZE}-{SEQUENCE}` (e.g. `DS-HOOD-BLK-M-001`). The
+  sequence runs per product-code + color across sizes, matching the spec.
+- The variant form auto-fills the SKU when adding a variant and keeps it in
+  sync with color/size until the admin edits it (manual override is preserved).
+- The server generates the authoritative, guaranteed-unique SKU on create
+  (retrying the sequence on a concurrent SKU collision). No SKU logic lives in
+  components.
+- **Bug fix:** `product_variants` has three unique constraints (sku, barcode,
+  and the (product_id, size, color) combo). Variant create/update now classify
+  a `23505` by the violated constraint and return the correct field-level
+  message, and the auto-SKU retry only loops on a true SKU collision (a
+  duplicate size/color or barcode is rejected immediately).
+- Verified against the live database: auto-generation, running sequence,
+  new-scope reset, and correct rejection/classification for sku/barcode/combo.
+
 ### Phase 2 — Admin Catalog Foundation (enhancements)
 
 Additive polish on top of the catalog module, continuing from the prior commit.

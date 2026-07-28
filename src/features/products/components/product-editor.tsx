@@ -109,6 +109,7 @@ export function ProductEditor({
           <ProductMediaManager productId={product.id} media={product.media} />
           <ProductVariantsManager
             productId={product.id}
+            productTitle={product.title}
             variants={product.variants}
           />
           <InventoryHistory movements={movements} />

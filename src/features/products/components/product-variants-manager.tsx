@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Boxes, Pencil, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,12 +27,18 @@ import { VariantFormDialog } from "./variant-form-dialog";
 
 export function ProductVariantsManager({
   productId,
+  productTitle,
   variants,
 }: {
   productId: string;
+  productTitle: string;
   variants: VariantWithInventory[];
 }) {
   const router = useRouter();
+  const existingSkus = useMemo(
+    () => variants.map((variant) => variant.sku),
+    [variants],
+  );
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<VariantWithInventory | null>(null);
   const [adjusting, setAdjusting] = useState<VariantWithInventory | null>(null);
@@ -183,6 +189,8 @@ export function ProductVariantsManager({
         open={formOpen}
         onOpenChange={setFormOpen}
         productId={productId}
+        productTitle={productTitle}
+        existingSkus={existingSkus}
         variant={editing}
         onSaved={() => router.refresh()}
       />

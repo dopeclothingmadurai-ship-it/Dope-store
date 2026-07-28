@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { applyServerErrors } from "@/lib/forms";
+import { generateSku } from "@/lib/sku";
 
 import { createVariantAction, updateVariantAction } from "../actions";
 import { variantFormSchema, type VariantFormValues } from "../schema";
@@ -37,21 +38,30 @@ export function VariantFormDialog({
   open,
   onOpenChange,
   productId,
+  productTitle,
+  existingSkus,
   variant,
   onSaved,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   productId: string;
+  productTitle: string;
+  existingSkus: string[];
   variant: VariantWithInventory | null;
   onSaved: () => void;
 }) {
   const isEdit = variant !== null;
+  // Once the admin edits the SKU we never overwrite it automatically again.
+  const [skuTouched, setSkuTouched] = useState(false);
+
   const {
     register,
     control,
     handleSubmit,
     reset,
+    getValues,
+    setValue,
     setError,
     formState: { errors, isSubmitting },
   } = useForm<VariantFormValues>({
@@ -61,24 +71,38 @@ export function VariantFormDialog({
 
   useEffect(() => {
     if (!open) return;
-    reset(
-      variant
-        ? {
-            sku: variant.sku,
-            barcode: variant.barcode ?? "",
-            size: variant.size ?? "",
-            color: variant.color ?? "",
-            priceOverride: variant.price_override,
-            weightGrams: variant.weight_grams,
-          }
-        : EMPTY,
+    if (variant) {
+      reset({
+        sku: variant.sku,
+        barcode: variant.barcode ?? "",
+        size: variant.size ?? "",
+        color: variant.color ?? "",
+        priceOverride: variant.price_override,
+        weightGrams: variant.weight_grams,
+      });
+      setSkuTouched(true);
+    } else {
+      reset({
+        ...EMPTY,
+        sku: generateSku(productTitle, null, null, existingSkus),
+      });
+      setSkuTouched(false);
+    }
+  }, [open, variant, reset, productTitle, existingSkus]);
+
+  // Keep the SKU in sync with color/size while it is still auto-generated.
+  function regenerateSku(nextColor: string, nextSize: string) {
+    if (isEdit || skuTouched) return;
+    setValue(
+      "sku",
+      generateSku(productTitle, nextColor, nextSize, existingSkus),
     );
-  }, [open, variant, reset]);
+  }
 
   const onSubmit = handleSubmit(async (values) => {
     const result = isEdit
       ? await updateVariantAction(productId, variant.id, values)
-      : await createVariantAction(productId, values);
+      : await createVariantAction(productId, values, !skuTouched);
 
     if (!result.ok) {
       applyServerErrors(result.error, setError);
@@ -106,10 +130,15 @@ export function VariantFormDialog({
             label="SKU"
             htmlFor="v-sku"
             required
+            hint="Generated automatically. Edit to set a custom SKU."
             error={errors.sku?.message}
             className="sm:col-span-2"
           >
-            <Input id="v-sku" {...register("sku")} />
+            <Input
+              id="v-sku"
+              className="font-mono"
+              {...register("sku", { onChange: () => setSkuTouched(true) })}
+            />
           </FormRow>
 
           <FormRow
@@ -147,7 +176,13 @@ export function VariantFormDialog({
           </FormRow>
 
           <FormRow label="Size" htmlFor="v-size" error={errors.size?.message}>
-            <Input id="v-size" {...register("size")} />
+            <Input
+              id="v-size"
+              {...register("size", {
+                onChange: (event) =>
+                  regenerateSku(getValues("color") ?? "", event.target.value),
+              })}
+            />
           </FormRow>
 
           <FormRow
@@ -155,7 +190,13 @@ export function VariantFormDialog({
             htmlFor="v-color"
             error={errors.color?.message}
           >
-            <Input id="v-color" {...register("color")} />
+            <Input
+              id="v-color"
+              {...register("color", {
+                onChange: (event) =>
+                  regenerateSku(event.target.value, getValues("size") ?? ""),
+              })}
+            />
           </FormRow>
 
           <FormRow

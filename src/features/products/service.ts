@@ -1,10 +1,15 @@
 import "server-only";
 
+import { type PostgrestError } from "@supabase/supabase-js";
+
 import {
+  ConflictError,
   InventoryError,
   NotFoundError,
+  ValidationError,
   fromPostgrestError,
 } from "@/lib/errors";
+import { buildSku, nextSequence, sequenceScope } from "@/lib/sku";
 import { PRODUCT_MEDIA_BUCKET, pathFromPublicUrl } from "@/lib/storage";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -163,28 +168,117 @@ function toVariantRow(input: VariantFormValues) {
   };
 }
 
-export async function createVariant(
-  productId: string,
-  input: VariantFormValues,
-): Promise<ProductVariant> {
-  const db = createAdminClient();
-  const { count, error: countError } = await db
+/**
+ * `product_variants` has three unique constraints (sku, barcode, and the
+ * (product_id, size, color) combo). Turn a 23505 into a field-level error on
+ * the input that actually collided.
+ */
+function variantUniqueError(error: PostgrestError): ValidationError {
+  const message = error.message ?? "";
+  if (message.includes("product_variants_barcode_unique")) {
+    return new ValidationError("This barcode is already in use.", {
+      barcode: ["This barcode is already in use."],
+    });
+  }
+  if (message.includes("product_variants_combo_idx")) {
+    return new ValidationError(
+      "A variant with this size and colour already exists.",
+      {
+        size: ["This size and colour combination already exists."],
+        color: ["This size and colour combination already exists."],
+      },
+    );
+  }
+  return new ValidationError("This SKU is already in use.", {
+    sku: ["This SKU is already in use."],
+  });
+}
+
+function isSkuConflict(error: PostgrestError): boolean {
+  return (error.message ?? "").includes("product_variants_sku_unique");
+}
+
+async function nextVariantPosition(db: Db, productId: string): Promise<number> {
+  const { count, error } = await db
     .from("product_variants")
     .select("*", { count: "exact", head: true })
     .eq("product_id", productId);
-  if (countError) throw fromPostgrestError(countError);
-
-  const { data, error } = await db
-    .from("product_variants")
-    .insert({
-      product_id: productId,
-      ...toVariantRow(input),
-      position: count ?? 0,
-    })
-    .select("*")
-    .single();
   if (error) throw fromPostgrestError(error);
-  return data;
+  return count ?? 0;
+}
+
+/**
+ * Create a variant.
+ *
+ * When `autoSku` is true the SKU is generated server-side from the product
+ * title + color + size; on a concurrent SKU collision the sequence is
+ * incremented and the insert retried. A duplicate barcode or size/color combo
+ * is rejected immediately with a field error (retrying the SKU can't fix it).
+ * When false the admin's manual SKU is used and any duplicate is rejected.
+ */
+export async function createVariant(
+  productId: string,
+  input: VariantFormValues,
+  autoSku: boolean,
+): Promise<ProductVariant> {
+  const db = createAdminClient();
+  const position = await nextVariantPosition(db, productId);
+  const row = { product_id: productId, ...toVariantRow(input), position };
+
+  if (!autoSku) {
+    const { data, error } = await db
+      .from("product_variants")
+      .insert(row)
+      .select("*")
+      .single();
+    if (error) {
+      if (error.code === "23505") throw variantUniqueError(error);
+      throw fromPostgrestError(error);
+    }
+    return data;
+  }
+
+  const { data: product, error: productError } = await db
+    .from("products")
+    .select("title")
+    .eq("id", productId)
+    .single();
+  if (productError) throw fromPostgrestError(productError);
+
+  const scope = sequenceScope(product.title, input.color);
+  const { data: existing, error: existingError } = await db
+    .from("product_variants")
+    .select("sku")
+    .like("sku", `${scope}-%`);
+  if (existingError) throw fromPostgrestError(existingError);
+
+  let sequence = nextSequence(
+    scope,
+    (existing ?? []).map((variant) => variant.sku),
+  );
+
+  // Retry on the rare concurrent collision, incrementing the sequence.
+  for (let attempt = 0; attempt < 1000; attempt += 1) {
+    const sku = buildSku(product.title, input.color, input.size, sequence);
+    const { data, error } = await db
+      .from("product_variants")
+      .insert({ ...row, sku })
+      .select("*")
+      .single();
+    if (!error) return data;
+    if (error.code === "23505") {
+      // Only a genuine SKU collision is resolved by a new sequence; a duplicate
+      // barcode or size/color combo must be surfaced to the admin.
+      if (isSkuConflict(error)) {
+        sequence += 1;
+        continue;
+      }
+      throw variantUniqueError(error);
+    }
+    throw fromPostgrestError(error);
+  }
+
+  throw new ConflictError("Could not generate a unique SKU. Please try again.");
 }
 
 export async function updateVariant(
@@ -198,7 +292,10 @@ export async function updateVariant(
     .eq("id", variantId)
     .select("*")
     .single();
-  if (error) throw fromPostgrestError(error);
+  if (error) {
+    if (error.code === "23505") throw variantUniqueError(error);
+    throw fromPostgrestError(error);
+  }
   return data;
 }
 
