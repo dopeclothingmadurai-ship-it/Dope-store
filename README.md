@@ -4,8 +4,8 @@ Premium fashion e-commerce platform — a luxury storefront and a premium
 dark-mode admin dashboard, built as a single production-grade Next.js
 application backed by Supabase.
 
-> **Status:** Phase 1 complete (core data layer: catalog + inventory). See
-> [`CHANGELOG.md`](./CHANGELOG.md).
+> **Status:** Phase 2 complete (admin catalog management: products, categories,
+> collections). See [`CHANGELOG.md`](./CHANGELOG.md).
 
 ---
 
@@ -158,6 +158,25 @@ supabase db push
 ```bash
 supabase gen types typescript --linked --schema public > src/types/database.ts
 ```
+
+---
+
+## Admin
+
+The admin lives under `/admin` (dark theme). Phase 2 ships the **Catalog**
+module at `/admin/catalog`:
+
+- **Products** — full CRUD, images (direct-to-Storage uploads, reorder, primary),
+  variants, and per-variant stock. Products archive/restore only.
+- **Categories** and **Collections** — CRUD with archive/restore; collections
+  support product assignment and ordering.
+
+Every mutation is a Zod-validated Server Action returning `Result<T>`; business
+logic lives in each feature's `service.ts`; inventory changes go only through
+`adjust_inventory()`.
+
+> **Auth:** admin routes are not yet protected — that lands in Phase 3. Until
+> then, admin Server Actions and reads use the server-side service-role client.
 
 ---
 

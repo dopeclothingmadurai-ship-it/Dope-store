@@ -5,6 +5,50 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Phase 2 — Admin Catalog Management
+
+A complete, production-ready admin catalog module under `/admin/catalog`
+(Products, Categories, Collections), plus the premium dark admin shell.
+
+**Added**
+
+- Additive migration (`..._catalog_phase2.sql`, applied to the hosted DB):
+  `products.compare_at_price` (paise), `products.featured`, `products.tags`;
+  `product_variants.weight_grams`; `categories.description` + `archived_at`;
+  `collections.archived_at`. RLS updated so archived categories/collections
+  (and their links) are hidden from public reads.
+- Feature modules (`features/{products,categories,collections}`) each with
+  `schema.ts` · `types.ts` · `queries.ts` · `service.ts` · `actions.ts` ·
+  `components/` · `index.ts`. Business logic lives only in services; every
+  mutation is a Zod-validated Server Action returning `Result<T>`.
+- **Products:** full CRUD with title, slug (auto), description, brand, category,
+  collections, status (draft/active), SEO, price + compare-at (integer paise),
+  featured, tags; paginated + searchable list; **archive/restore only, no
+  delete**. Image manager (direct-to-Storage signed uploads, drag-and-drop,
+  multiple, drag-to-reorder, set primary, delete). Variants (SKU, barcode,
+  size, color, price override, weight) with per-variant inventory display and
+  adjustments made exclusively through `adjust_inventory()`.
+- **Categories:** CRUD with image, position, description, archive/restore.
+- **Collections:** CRUD (manual/automated, featured), product assignment with
+  ordering, archive/restore.
+- Shared foundation: `Result<T>` + typed errors + `runAction` wrapper, money
+  helpers (paise), slug helper, signed-upload media module, reusable admin
+  components (data tables, dialogs, price/tags inputs, image uploaders,
+  confirm dialog, status badges), and the dark admin shell with Sonner toasts.
+
+**Verified**
+
+- Migration applied via `supabase db push`; types regenerated from the live
+  schema. `npm run typecheck`, `npm run lint`, and `npm run build` all pass.
+- Runtime smoke test: all admin routes render (200); an end-to-end category
+  create through the real UI succeeded (Server Action → service → DB →
+  revalidate → toast). Test data cleaned up.
+
+**Changed**
+
+- Disabled `next.config` `typedRoutes` (it broke standalone `tsc` typecheck once
+  internal `Link`s existed; route hrefs are plain strings).
+
 ### Phase 1 — Core Data Layer
 
 Database foundation only (catalog + inventory). No auth, orders, customers,

@@ -1,12 +1,8 @@
 /**
  * Supabase database types — GENERATED. Do not edit by hand.
  *
- * Produced from the linked hosted project (schema applied via the Phase 1
- * migrations in `supabase/migrations/`). Regenerate after any schema change:
- *
+ * Regenerate after any schema change:
  *   supabase gen types typescript --linked --schema public > src/types/database.ts
- *
- * No Docker required — `--linked` targets the hosted project.
  */
 export type Json =
   | string
@@ -26,7 +22,9 @@ export type Database = {
     Tables: {
       categories: {
         Row: {
+          archived_at: string | null;
           created_at: string;
+          description: string | null;
           id: string;
           image_url: string | null;
           name: string;
@@ -35,7 +33,9 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          archived_at?: string | null;
           created_at?: string;
+          description?: string | null;
           id?: string;
           image_url?: string | null;
           name: string;
@@ -44,7 +44,9 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          archived_at?: string | null;
           created_at?: string;
+          description?: string | null;
           id?: string;
           image_url?: string | null;
           name?: string;
@@ -92,6 +94,7 @@ export type Database = {
       };
       collections: {
         Row: {
+          archived_at: string | null;
           created_at: string;
           id: string;
           is_featured: boolean;
@@ -101,6 +104,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          archived_at?: string | null;
           created_at?: string;
           id?: string;
           is_featured?: boolean;
@@ -110,6 +114,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          archived_at?: string | null;
           created_at?: string;
           id?: string;
           is_featured?: boolean;
@@ -243,6 +248,7 @@ export type Database = {
           size: string | null;
           sku: string;
           updated_at: string;
+          weight_grams: number | null;
         };
         Insert: {
           barcode?: string | null;
@@ -255,6 +261,7 @@ export type Database = {
           size?: string | null;
           sku: string;
           updated_at?: string;
+          weight_grams?: number | null;
         };
         Update: {
           barcode?: string | null;
@@ -267,6 +274,7 @@ export type Database = {
           size?: string | null;
           sku?: string;
           updated_at?: string;
+          weight_grams?: number | null;
         };
         Relationships: [
           {
@@ -284,13 +292,16 @@ export type Database = {
           base_price: number;
           brand: string | null;
           category_id: string | null;
+          compare_at_price: number | null;
           created_at: string;
           description: string | null;
+          featured: boolean;
           id: string;
           seo_description: string | null;
           seo_title: string | null;
           slug: string;
           status: Database["public"]["Enums"]["product_status"];
+          tags: string[];
           title: string;
           updated_at: string;
         };
@@ -299,13 +310,16 @@ export type Database = {
           base_price: number;
           brand?: string | null;
           category_id?: string | null;
+          compare_at_price?: number | null;
           created_at?: string;
           description?: string | null;
+          featured?: boolean;
           id?: string;
           seo_description?: string | null;
           seo_title?: string | null;
           slug: string;
           status?: Database["public"]["Enums"]["product_status"];
+          tags?: string[];
           title: string;
           updated_at?: string;
         };
@@ -314,13 +328,16 @@ export type Database = {
           base_price?: number;
           brand?: string | null;
           category_id?: string | null;
+          compare_at_price?: number | null;
           created_at?: string;
           description?: string | null;
+          featured?: boolean;
           id?: string;
           seo_description?: string | null;
           seo_title?: string | null;
           slug?: string;
           status?: Database["public"]["Enums"]["product_status"];
+          tags?: string[];
           title?: string;
           updated_at?: string;
         };

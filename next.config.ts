@@ -4,9 +4,6 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
 
-  // Typed navigation (Link/router) — surfaces broken routes at build time.
-  typedRoutes: true,
-
   images: {
     // Serve modern formats; the storefront catalog is image-heavy.
     formats: ["image/avif", "image/webp"],

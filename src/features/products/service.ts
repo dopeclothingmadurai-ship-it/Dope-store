@@ -1,0 +1,346 @@
+import "server-only";
+
+import {
+  InventoryError,
+  NotFoundError,
+  fromPostgrestError,
+} from "@/lib/errors";
+import { PRODUCT_MEDIA_BUCKET, pathFromPublicUrl } from "@/lib/storage";
+import { createAdminClient } from "@/lib/supabase/admin";
+
+import {
+  type InventoryAdjustValues,
+  type ProductFormValues,
+  type ProductMediaValues,
+  type VariantFormValues,
+} from "./schema";
+import {
+  type Inventory,
+  type Product,
+  type ProductMedia,
+  type ProductVariant,
+} from "./types";
+
+type Db = ReturnType<typeof createAdminClient>;
+
+function normalize(value: string | null): string | null {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
+}
+
+/**
+ * Sync a product's collection membership without disturbing the ordering of
+ * other products in those collections. Added memberships are appended.
+ */
+async function syncProductCollections(
+  db: Db,
+  productId: string,
+  collectionIds: string[],
+): Promise<void> {
+  const { data: existing, error } = await db
+    .from("collection_products")
+    .select("collection_id")
+    .eq("product_id", productId);
+  if (error) throw fromPostgrestError(error);
+
+  const existingIds = new Set(existing.map((row) => row.collection_id));
+  const selectedIds = new Set(collectionIds);
+
+  const toRemove = [...existingIds].filter((id) => !selectedIds.has(id));
+  const toAdd = collectionIds.filter((id) => !existingIds.has(id));
+
+  if (toRemove.length > 0) {
+    const { error: removeError } = await db
+      .from("collection_products")
+      .delete()
+      .eq("product_id", productId)
+      .in("collection_id", toRemove);
+    if (removeError) throw fromPostgrestError(removeError);
+  }
+
+  for (const collectionId of toAdd) {
+    const { count, error: countError } = await db
+      .from("collection_products")
+      .select("*", { count: "exact", head: true })
+      .eq("collection_id", collectionId);
+    if (countError) throw fromPostgrestError(countError);
+
+    const { error: insertError } = await db.from("collection_products").insert({
+      collection_id: collectionId,
+      product_id: productId,
+      position: count ?? 0,
+    });
+    if (insertError) throw fromPostgrestError(insertError);
+  }
+}
+
+function toProductRow(input: ProductFormValues) {
+  return {
+    title: input.title,
+    slug: input.slug,
+    description: normalize(input.description),
+    brand: normalize(input.brand),
+    category_id: input.categoryId,
+    status: input.status,
+    base_price: input.basePrice,
+    compare_at_price: input.compareAtPrice,
+    featured: input.featured,
+    tags: input.tags,
+    seo_title: normalize(input.seoTitle),
+    seo_description: normalize(input.seoDescription),
+    archived_at: null,
+  };
+}
+
+export async function createProduct(
+  input: ProductFormValues,
+): Promise<Product> {
+  const db = createAdminClient();
+  const { data, error } = await db
+    .from("products")
+    .insert(toProductRow(input))
+    .select("*")
+    .single();
+  if (error) throw fromPostgrestError(error);
+
+  await syncProductCollections(db, data.id, input.collectionIds);
+  return data;
+}
+
+export async function updateProduct(
+  id: string,
+  input: ProductFormValues,
+): Promise<Product> {
+  const db = createAdminClient();
+  const { data, error } = await db
+    .from("products")
+    .update(toProductRow(input))
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw fromPostgrestError(error);
+
+  await syncProductCollections(db, id, input.collectionIds);
+  return data;
+}
+
+export async function archiveProduct(id: string): Promise<Product> {
+  const db = createAdminClient();
+  const { data, error } = await db
+    .from("products")
+    .update({ status: "archived", archived_at: new Date().toISOString() })
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw fromPostgrestError(error);
+  return data;
+}
+
+export async function restoreProduct(id: string): Promise<Product> {
+  const db = createAdminClient();
+  const { data, error } = await db
+    .from("products")
+    .update({ status: "draft", archived_at: null })
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw fromPostgrestError(error);
+  return data;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Variants                                                                   */
+/* -------------------------------------------------------------------------- */
+
+function toVariantRow(input: VariantFormValues) {
+  return {
+    sku: input.sku,
+    barcode: normalize(input.barcode),
+    size: normalize(input.size),
+    color: normalize(input.color),
+    price_override: input.priceOverride,
+    weight_grams: input.weightGrams,
+  };
+}
+
+export async function createVariant(
+  productId: string,
+  input: VariantFormValues,
+): Promise<ProductVariant> {
+  const db = createAdminClient();
+  const { count, error: countError } = await db
+    .from("product_variants")
+    .select("*", { count: "exact", head: true })
+    .eq("product_id", productId);
+  if (countError) throw fromPostgrestError(countError);
+
+  const { data, error } = await db
+    .from("product_variants")
+    .insert({
+      product_id: productId,
+      ...toVariantRow(input),
+      position: count ?? 0,
+    })
+    .select("*")
+    .single();
+  if (error) throw fromPostgrestError(error);
+  return data;
+}
+
+export async function updateVariant(
+  variantId: string,
+  input: VariantFormValues,
+): Promise<ProductVariant> {
+  const db = createAdminClient();
+  const { data, error } = await db
+    .from("product_variants")
+    .update(toVariantRow(input))
+    .eq("id", variantId)
+    .select("*")
+    .single();
+  if (error) throw fromPostgrestError(error);
+  return data;
+}
+
+export async function deleteVariant(variantId: string): Promise<void> {
+  const db = createAdminClient();
+  const { error } = await db
+    .from("product_variants")
+    .delete()
+    .eq("id", variantId);
+  if (error) throw fromPostgrestError(error);
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Inventory — always through adjust_inventory()                             */
+/* -------------------------------------------------------------------------- */
+
+export async function adjustInventory(
+  variantId: string,
+  input: InventoryAdjustValues,
+): Promise<Inventory> {
+  const db = createAdminClient();
+  const { data, error } = await db.rpc("adjust_inventory", {
+    p_variant_id: variantId,
+    p_delta: input.delta,
+    p_reason: input.reason,
+    p_reference: input.reference ?? undefined,
+  });
+
+  if (error) {
+    const message = error.message
+      .replace(/^.*adjust_inventory:\s*/i, "")
+      .trim();
+    throw new InventoryError(
+      message
+        ? message.charAt(0).toUpperCase() + message.slice(1)
+        : "Inventory adjustment failed.",
+    );
+  }
+
+  return data;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Media                                                                      */
+/* -------------------------------------------------------------------------- */
+
+export async function addProductMedia(
+  productId: string,
+  input: ProductMediaValues,
+): Promise<ProductMedia> {
+  const db = createAdminClient();
+  const { count, error: countError } = await db
+    .from("product_media")
+    .select("*", { count: "exact", head: true })
+    .eq("product_id", productId);
+  if (countError) throw fromPostgrestError(countError);
+
+  const position = count ?? 0;
+  const { data, error } = await db
+    .from("product_media")
+    .insert({
+      product_id: productId,
+      url: input.url,
+      alt: normalize(input.alt),
+      position,
+      is_primary: position === 0,
+    })
+    .select("*")
+    .single();
+  if (error) throw fromPostgrestError(error);
+  return data;
+}
+
+export async function reorderProductMedia(
+  productId: string,
+  orderedIds: string[],
+): Promise<void> {
+  const db = createAdminClient();
+  for (const [index, id] of orderedIds.entries()) {
+    const { error } = await db
+      .from("product_media")
+      .update({ position: index })
+      .eq("id", id)
+      .eq("product_id", productId);
+    if (error) throw fromPostgrestError(error);
+  }
+}
+
+export async function setPrimaryProductMedia(
+  productId: string,
+  mediaId: string,
+): Promise<void> {
+  const db = createAdminClient();
+  const { error: clearError } = await db
+    .from("product_media")
+    .update({ is_primary: false })
+    .eq("product_id", productId);
+  if (clearError) throw fromPostgrestError(clearError);
+
+  const { error } = await db
+    .from("product_media")
+    .update({ is_primary: true })
+    .eq("id", mediaId)
+    .eq("product_id", productId);
+  if (error) throw fromPostgrestError(error);
+}
+
+export async function deleteProductMedia(mediaId: string): Promise<void> {
+  const db = createAdminClient();
+  const { data: media, error } = await db
+    .from("product_media")
+    .select("*")
+    .eq("id", mediaId)
+    .maybeSingle();
+  if (error) throw fromPostgrestError(error);
+  if (!media) throw new NotFoundError("Image not found.");
+
+  const { error: deleteError } = await db
+    .from("product_media")
+    .delete()
+    .eq("id", mediaId);
+  if (deleteError) throw fromPostgrestError(deleteError);
+
+  const path = pathFromPublicUrl(PRODUCT_MEDIA_BUCKET, media.url);
+  if (path) {
+    // Best-effort storage cleanup; a leftover object must not fail the action.
+    await db.storage.from(PRODUCT_MEDIA_BUCKET).remove([path]);
+  }
+
+  if (media.is_primary) {
+    const { data: next } = await db
+      .from("product_media")
+      .select("id")
+      .eq("product_id", media.product_id)
+      .order("position", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (next) {
+      await db
+        .from("product_media")
+        .update({ is_primary: true })
+        .eq("id", next.id);
+    }
+  }
+}
