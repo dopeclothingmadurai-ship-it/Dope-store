@@ -198,6 +198,29 @@ function isSkuConflict(error: PostgrestError): boolean {
   return (error.message ?? "").includes("product_variants_sku_unique");
 }
 
+/**
+ * Application-level SKU uniqueness check, run before a manual insert/update so a
+ * duplicate is rejected with a clear message rather than only surfacing as a DB
+ * error. The `product_variants_sku_unique` constraint remains the race-condition
+ * backstop (handled via `variantUniqueError`).
+ */
+async function assertSkuAvailable(
+  db: Db,
+  sku: string,
+  excludeVariantId?: string,
+): Promise<void> {
+  let query = db.from("product_variants").select("id").eq("sku", sku).limit(1);
+  if (excludeVariantId) query = query.neq("id", excludeVariantId);
+
+  const { data, error } = await query.maybeSingle();
+  if (error) throw fromPostgrestError(error);
+  if (data) {
+    throw new ValidationError("This SKU is already in use.", {
+      sku: ["This SKU is already in use."],
+    });
+  }
+}
+
 async function nextVariantPosition(db: Db, productId: string): Promise<number> {
   const { count, error } = await db
     .from("product_variants")
@@ -226,6 +249,7 @@ export async function createVariant(
   const row = { product_id: productId, ...toVariantRow(input), position };
 
   if (!autoSku) {
+    await assertSkuAvailable(db, input.sku);
     const { data, error } = await db
       .from("product_variants")
       .insert(row)
@@ -286,6 +310,7 @@ export async function updateVariant(
   input: VariantFormValues,
 ): Promise<ProductVariant> {
   const db = createAdminClient();
+  await assertSkuAvailable(db, input.sku, variantId);
   const { data, error } = await db
     .from("product_variants")
     .update(toVariantRow(input))

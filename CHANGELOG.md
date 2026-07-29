@@ -48,6 +48,11 @@ permission model).
 - The server generates the authoritative, guaranteed-unique SKU on create
   (retrying the sequence on a concurrent SKU collision). No SKU logic lives in
   components.
+- Manual create/update perform an **application-level** SKU uniqueness check
+  before writing (clear "This SKU is already in use." field error) rather than
+  relying only on the DB error; the unique constraint remains the race-condition
+  backstop. Editing a product title never changes existing SKUs — only new
+  variants use the updated title.
 - **Bug fix:** `product_variants` has three unique constraints (sku, barcode,
   and the (product_id, size, color) combo). Variant create/update now classify
   a `23505` by the violated constraint and return the correct field-level
