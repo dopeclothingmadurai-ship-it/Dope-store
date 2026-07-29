@@ -20,6 +20,9 @@ logic, database, server action, or routing changes.
   subtle zebra, hover, refined typography and spacing); larger page titles;
   more generous page spacing.
 - Premium login page: ambient gradient background, glass card, motion entrance.
+- Real Dope Store brand mark (`public/dope-logo.png`, optimized) replaces the
+  placeholder "D" in the sidebar and on the login page via a reusable
+  `DopeLogo` component.
 - Subtle Framer Motion (page transitions, sidebar, active-nav indicator, modal
   drawer) — professional, not flashy. Responsive across desktop/tablet/mobile;
   focus states, aria labels and keyboard access preserved.

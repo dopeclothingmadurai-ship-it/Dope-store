@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { OctagonAlert } from "lucide-react";
 
+import { DopeLogo } from "@/components/admin/logo";
 import { FormRow } from "@/components/admin/form-row";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,9 +61,7 @@ export function LoginForm() {
       className="relative z-10 w-full max-w-sm rounded-2xl border border-white/[0.08] bg-white/[0.03] p-7 shadow-2xl shadow-black/40 backdrop-blur-xl"
     >
       <div className="mb-6 flex flex-col items-center text-center">
-        <span className="mb-4 flex size-11 items-center justify-center rounded-xl bg-gradient-to-b from-white to-white/70 text-lg font-bold text-black shadow-lg">
-          D
-        </span>
+        <DopeLogo size={56} priority className="mb-4" />
         <h1 className="font-heading text-xl font-semibold tracking-tight">
           Welcome back
         </h1>

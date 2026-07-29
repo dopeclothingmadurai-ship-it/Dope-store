@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { Breadcrumbs } from "@/components/admin/breadcrumbs";
+import { DopeLogo } from "@/components/admin/logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ADMIN_NAV } from "@/config/admin-nav";
@@ -74,11 +75,10 @@ function Brand({ collapsed }: { collapsed: boolean }) {
   return (
     <Link
       href="/admin/catalog/products"
-      className="flex h-9 items-center gap-2.5 px-2"
+      className="flex h-9 items-center gap-2.5 px-1"
+      aria-label="Dope Store admin"
     >
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-b from-white to-white/70 text-sm font-bold text-black shadow-sm">
-        D
-      </span>
+      <DopeLogo size={34} />
       {!collapsed ? (
         <span className="font-heading text-sm font-semibold tracking-tight text-white">
           Dope Store
