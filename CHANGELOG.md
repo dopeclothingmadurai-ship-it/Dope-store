@@ -5,6 +5,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Premium admin dashboard redesign (UI only)
+
+A visual overhaul of the admin into a premium dark SaaS dashboard. No business
+logic, database, server action, or routing changes.
+
+- New admin dark palette via CSS variables (bg `#090909`, surface `#111`, cards
+  `#171717`, white accent, `#22c55e`/`#f59e0b`/`#ef4444` status). Storefront
+  (light) theme untouched. Refined scrollbars and selection.
+- New `AdminShell`: collapsible sidebar (persisted, animated) with brand, active
+  indicator, elegant icons, user profile + logout at the bottom; a sticky top
+  bar with breadcrumbs, product search and profile; mobile slide-in drawer.
+- `rounded-2xl` cards with soft borders/shadow; premium tables (sticky header,
+  subtle zebra, hover, refined typography and spacing); larger page titles;
+  more generous page spacing.
+- Premium login page: ambient gradient background, glass card, motion entrance.
+- Subtle Framer Motion (page transitions, sidebar, active-nav indicator, modal
+  drawer) — professional, not flashy. Responsive across desktop/tablet/mobile;
+  focus states, aria labels and keyboard access preserved.
+
 ### Phase 3 — Admin authentication & authorization
 
 Secures the admin panel. Reuses the existing `is_staff()` system (no new

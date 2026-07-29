@@ -140,54 +140,81 @@
 }
 
 /* ===========================================================================
- *  ADMIN THEME — deep, premium dark SaaS (Linear / Vercel character)
+ *  ADMIN THEME — premium dark dashboard (Linear / Vercel / Stripe character)
+ *  Palette: bg #090909 · surface #111 · card #171717 · white accent.
  * ========================================================================= */
 .dark {
-  --background: oklch(0.16 0.006 265);
-  --foreground: oklch(0.97 0.003 265);
+  --radius: 0.75rem;
 
-  --card: oklch(0.196 0.007 265);
-  --card-foreground: oklch(0.97 0.003 265);
-  --popover: oklch(0.196 0.007 265);
-  --popover-foreground: oklch(0.97 0.003 265);
+  --background: #090909;
+  --foreground: #ffffff;
 
-  --primary: oklch(0.62 0.19 265);
-  --primary-foreground: oklch(0.985 0.002 265);
-  --secondary: oklch(0.255 0.008 265);
-  --secondary-foreground: oklch(0.97 0.003 265);
-  --muted: oklch(0.255 0.008 265);
-  --muted-foreground: oklch(0.708 0.01 265);
-  --accent: oklch(0.28 0.012 265);
-  --accent-foreground: oklch(0.97 0.003 265);
+  --card: #171717;
+  --card-foreground: #ffffff;
+  --popover: #161616;
+  --popover-foreground: #ffffff;
 
-  --brand: oklch(0.76 0.1 80);
-  --brand-foreground: oklch(0.18 0.02 60);
+  --primary: #ffffff;
+  --primary-foreground: #0a0a0a;
+  --secondary: #1e1e1e;
+  --secondary-foreground: #ffffff;
+  --muted: #151515;
+  --muted-foreground: #9ca3af;
+  --accent: rgba(255, 255, 255, 0.06);
+  --accent-foreground: #ffffff;
 
-  --success: oklch(0.7 0.15 150);
-  --success-foreground: oklch(0.16 0.006 265);
-  --warning: oklch(0.8 0.14 78);
-  --warning-foreground: oklch(0.16 0.006 265);
-  --destructive: oklch(0.68 0.19 22);
-  --destructive-foreground: oklch(0.985 0.002 265);
+  --brand: #ffffff;
+  --brand-foreground: #0a0a0a;
 
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.62 0.19 265);
+  --success: #22c55e;
+  --success-foreground: #04140a;
+  --warning: #f59e0b;
+  --warning-foreground: #1c1204;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
 
-  --chart-1: oklch(0.67 0.19 265);
-  --chart-2: oklch(0.72 0.14 200);
-  --chart-3: oklch(0.75 0.15 145);
-  --chart-4: oklch(0.8 0.14 78);
-  --chart-5: oklch(0.7 0.2 15);
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: rgba(255, 255, 255, 0.32);
 
-  --sidebar: oklch(0.18 0.007 265);
-  --sidebar-foreground: oklch(0.97 0.003 265);
-  --sidebar-primary: oklch(0.62 0.19 265);
-  --sidebar-primary-foreground: oklch(0.985 0.002 265);
-  --sidebar-accent: oklch(0.28 0.012 265);
-  --sidebar-accent-foreground: oklch(0.97 0.003 265);
-  --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.62 0.19 265);
+  --chart-1: #ffffff;
+  --chart-2: #22c55e;
+  --chart-3: #f59e0b;
+  --chart-4: #60a5fa;
+  --chart-5: #a78bfa;
+
+  --sidebar: #111111;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #0a0a0a;
+  --sidebar-accent: rgba(255, 255, 255, 0.06);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: rgba(255, 255, 255, 0.32);
+}
+
+/* Premium admin polish: refined scrollbars + selection in the dark theme. */
+.dark ::selection {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+.dark * {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+}
+.dark *::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.dark *::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 9999px;
+}
+.dark *::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+  background-clip: content-box;
 }
 
 @layer base {
