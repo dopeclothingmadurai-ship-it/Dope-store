@@ -13,6 +13,7 @@ const LABELS: Record<string, string> = {
   categories: "Categories",
   collections: "Collections",
   orders: "Orders",
+  customers: "Customers",
   new: "New",
 };
 
@@ -36,7 +37,9 @@ function buildCrumbs(pathname: string): Crumb[] {
           ? "Manage"
           : parent === "orders"
             ? "Details"
-            : "Edit";
+            : parent === "customers"
+              ? "Profile"
+              : "Edit";
       crumbs.push({ label, href });
       return;
     }
