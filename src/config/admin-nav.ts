@@ -5,6 +5,7 @@ import {
   Package,
   Layers,
   FolderTree,
+  Settings,
   ShoppingBag,
   Store,
   Ticket,
@@ -61,5 +62,9 @@ export const ADMIN_NAV: AdminNavGroup[] = [
   {
     label: "Point of Sale",
     items: [{ label: "Offline Billing", href: "/admin/pos", icon: Store }],
+  },
+  {
+    label: "System",
+    items: [{ label: "Settings", href: "/admin/settings", icon: Settings }],
   },
 ];
