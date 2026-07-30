@@ -23,13 +23,23 @@ export type AdminNavGroup = {
   items: AdminNavItem[];
 };
 
-/** Admin sidebar navigation. Phase 2 ships Catalog; Phase 4 adds Sales. */
+/**
+ * Admin sidebar navigation. Grouped, but ordered to follow the daily flow:
+ * overview → sell → merchandise → market → point of sale → system.
+ */
 export const ADMIN_NAV: AdminNavGroup[] = [
   {
     label: "Overview",
     items: [
       { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
       { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
+    ],
+  },
+  {
+    label: "Sales",
+    items: [
+      { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
+      { label: "Customers", href: "/admin/customers", icon: Users },
     ],
   },
   {
@@ -46,13 +56,6 @@ export const ADMIN_NAV: AdminNavGroup[] = [
         href: "/admin/catalog/collections",
         icon: Layers,
       },
-    ],
-  },
-  {
-    label: "Sales",
-    items: [
-      { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
-      { label: "Customers", href: "/admin/customers", icon: Users },
     ],
   },
   {

@@ -145,7 +145,6 @@ export async function getAnalytics(
     string,
     { title: string; productId: string | null; units: number; revenue: number }
   >();
-  const itemsByProduct = new Map<string, number>();
 
   if (orderIds.length > 0) {
     const { data: items, error: itemsError } = await db
@@ -166,12 +165,6 @@ export async function getAnalytics(
       entry.units += item.quantity;
       entry.revenue += item.subtotal;
       productAgg.set(key, entry);
-      if (item.product_id) {
-        itemsByProduct.set(
-          item.product_id,
-          (itemsByProduct.get(item.product_id) ?? 0) + item.subtotal,
-        );
-      }
     }
   }
 

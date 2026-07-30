@@ -5,12 +5,7 @@ import { type CouponSort, type CouponStatus } from "@/features/coupons/types";
 export const dynamic = "force-dynamic";
 
 const SORTS: CouponSort[] = ["created", "code", "usage"];
-const STATUSES: CouponStatus[] = [
-  "active",
-  "scheduled",
-  "expired",
-  "archived",
-];
+const STATUSES: CouponStatus[] = ["active", "scheduled", "expired", "archived"];
 
 export default async function CouponsPage({
   searchParams,
