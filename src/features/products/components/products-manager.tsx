@@ -11,6 +11,7 @@ import {
   ArrowDown,
   ArrowUp,
   ChevronsUpDown,
+  Copy,
   ImageIcon,
   MoreHorizontal,
   Package,
@@ -35,7 +36,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-import { archiveProductAction, restoreProductAction } from "../actions";
+import {
+  archiveProductAction,
+  duplicateProductAction,
+  restoreProductAction,
+} from "../actions";
 import {
   type ProductListItem,
   type ProductListResult,
@@ -190,9 +195,11 @@ function CollectionBadge({ names }: { names: string[] }) {
 
 function RowActions({
   product,
+  onDuplicate,
   onArchiveToggle,
 }: {
   product: ProductListItem;
+  onDuplicate: (product: ProductListItem) => void;
   onArchiveToggle: (product: ProductListItem, archive: boolean) => void;
 }) {
   const router = useRouter();
@@ -209,6 +216,9 @@ function RowActions({
       <DropdownMenuContent align="end" className="min-w-40">
         <DropdownMenuItem onClick={() => router.push(href)}>
           <Pencil /> Edit
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onDuplicate(product)}>
+          <Copy /> Duplicate
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         {product.status === "archived" ? (
@@ -336,6 +346,16 @@ export function ProductsManager({
 
   const onArchiveToggle = (product: ProductListItem, archive: boolean) =>
     setConfirm({ product, archive });
+
+  async function handleDuplicate(product: ProductListItem) {
+    const res = await duplicateProductAction(product.id);
+    if (!res.ok) {
+      toast.error(res.error.message);
+      return;
+    }
+    toast.success(`Duplicated as “${res.data.title}”`);
+    router.push(`/admin/catalog/products/${res.data.id}`);
+  }
 
   return (
     <div className="space-y-8">
@@ -583,6 +603,7 @@ export function ProductsManager({
                     <td className="px-5 py-4 text-right">
                       <RowActions
                         product={product}
+                        onDuplicate={handleDuplicate}
                         onArchiveToggle={onArchiveToggle}
                       />
                     </td>
@@ -615,6 +636,7 @@ export function ProductsManager({
                       </Link>
                       <RowActions
                         product={product}
+                        onDuplicate={handleDuplicate}
                         onArchiveToggle={onArchiveToggle}
                       />
                     </div>

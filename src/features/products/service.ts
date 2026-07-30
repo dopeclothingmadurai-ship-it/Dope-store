@@ -9,7 +9,15 @@ import {
   ValidationError,
   fromPostgrestError,
 } from "@/lib/errors";
-import { buildSku, nextSequence, sequenceScope } from "@/lib/sku";
+import {
+  SKU_PREFIX,
+  buildSku,
+  generateSku,
+  nextSequence,
+  productCode,
+  sequenceScope,
+} from "@/lib/sku";
+import { slugify } from "@/lib/slug";
 import { PRODUCT_MEDIA_BUCKET, pathFromPublicUrl } from "@/lib/storage";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -151,6 +159,99 @@ export async function restoreProduct(id: string): Promise<Product> {
     .single();
   if (error) throw fromPostgrestError(error);
   return data;
+}
+
+/** Pick the next "X (Copy)" / "X (Copy 2)" title that is not already taken. */
+async function nextCopyTitle(db: Db, base: string): Promise<string> {
+  const { data, error } = await db
+    .from("products")
+    .select("title")
+    .like("title", `${base} (Copy%`);
+  if (error) throw fromPostgrestError(error);
+  const used = new Set((data ?? []).map((row) => row.title));
+  if (!used.has(`${base} (Copy)`)) return `${base} (Copy)`;
+  let n = 2;
+  while (used.has(`${base} (Copy ${n})`)) n += 1;
+  return `${base} (Copy ${n})`;
+}
+
+/** Ensure a slug is unique, appending -2, -3… if needed. */
+async function uniqueSlug(db: Db, baseSlug: string): Promise<string> {
+  const base = baseSlug || "product";
+  let candidate = base;
+  let n = 2;
+  for (;;) {
+    const { data, error } = await db
+      .from("products")
+      .select("id")
+      .eq("slug", candidate)
+      .limit(1)
+      .maybeSingle();
+    if (error) throw fromPostgrestError(error);
+    if (!data) return candidate;
+    candidate = `${base}-${n}`;
+    n += 1;
+  }
+}
+
+/**
+ * Duplicate a product and everything under it (media, variants, inventory
+ * settings, collections) in a single transaction via `duplicate_product()`.
+ * The copy is always a draft with a "(Copy)" title, fresh timestamps, and
+ * newly generated unique SKUs (barcodes cleared, stock reset to 0). Orders and
+ * inventory history are never copied.
+ */
+export async function duplicateProduct(sourceId: string): Promise<Product> {
+  const db = createAdminClient();
+
+  const { data: source, error: sourceError } = await db
+    .from("products")
+    .select("title")
+    .eq("id", sourceId)
+    .maybeSingle();
+  if (sourceError) throw fromPostgrestError(sourceError);
+  if (!source) throw new NotFoundError("Product not found.");
+
+  const { data: variants, error: variantsError } = await db
+    .from("product_variants")
+    .select("id, size, color")
+    .eq("product_id", sourceId)
+    .order("position", { ascending: true })
+    .order("created_at", { ascending: true });
+  if (variantsError) throw fromPostgrestError(variantsError);
+
+  const title = await nextCopyTitle(db, source.title);
+  const slug = await uniqueSlug(db, slugify(title));
+
+  // Generate fresh unique SKUs with the shared utility, seeded with existing
+  // SKUs for the new product's code so per-color sequences continue correctly.
+  const { data: existing, error: existingError } = await db
+    .from("product_variants")
+    .select("sku")
+    .like("sku", `${SKU_PREFIX}-${productCode(title)}-%`);
+  if (existingError) throw fromPostgrestError(existingError);
+  const seen = (existing ?? []).map((row) => row.sku);
+  const variantSkus = variants.map((variant) => {
+    const sku = generateSku(title, variant.color, variant.size, seen);
+    seen.push(sku);
+    return { variant_id: variant.id, sku };
+  });
+
+  const { data: newId, error: rpcError } = await db.rpc("duplicate_product", {
+    p_source_id: sourceId,
+    p_title: title,
+    p_slug: slug,
+    p_variant_skus: variantSkus,
+  });
+  if (rpcError) throw fromPostgrestError(rpcError);
+
+  const { data: created, error: createdError } = await db
+    .from("products")
+    .select("*")
+    .eq("id", newId)
+    .single();
+  if (createdError) throw fromPostgrestError(createdError);
+  return created;
 }
 
 /* -------------------------------------------------------------------------- */

@@ -74,6 +74,16 @@ export async function restoreProductAction(
   });
 }
 
+export async function duplicateProductAction(
+  id: unknown,
+): Promise<Result<Product>> {
+  return runStaffAction(async () => {
+    const product = await service.duplicateProduct(uuidSchema.parse(id));
+    revalidateProduct(product.id);
+    return product;
+  });
+}
+
 /* --- Variants ------------------------------------------------------------ */
 
 export async function createVariantAction(

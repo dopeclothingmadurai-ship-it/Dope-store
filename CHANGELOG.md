@@ -5,6 +5,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Product duplication
+
+- Additive `duplicate_product()` Postgres function duplicates a product and
+  everything under it in a single transaction (atomic rollback on failure):
+  product attributes, media (same storage URLs), variants, inventory settings
+  and collection memberships.
+- The copy is always a **draft** with a "(Copy)" / "(Copy 2)" title and a unique
+  slug; timestamps are fresh; orders and inventory history are never copied.
+- Each duplicated variant gets a newly generated unique SKU (via the shared SKU
+  utility), a cleared barcode, and a fresh inventory record at quantity 0 with
+  the source's threshold/location copied (stock is never copied — it only moves
+  through `adjust_inventory()`).
+- Exposed as **Duplicate** in the product row overflow menu (Edit · Duplicate ·
+  Archive/Restore — no Delete; archive-only lifecycle preserved).
+
 ### Premium Products page redesign (UI only)
 
 Redesigned the admin Products list into a luxury fashion CMS view. No schema,

@@ -396,6 +396,15 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      duplicate_product: {
+        Args: {
+          p_slug: string;
+          p_source_id: string;
+          p_title: string;
+          p_variant_skus: Json;
+        };
+        Returns: string;
+      };
       is_staff: { Args: never; Returns: boolean };
     };
     Enums: {
