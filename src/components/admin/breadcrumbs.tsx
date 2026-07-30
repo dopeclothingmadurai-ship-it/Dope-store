@@ -14,6 +14,7 @@ const LABELS: Record<string, string> = {
   collections: "Collections",
   orders: "Orders",
   customers: "Customers",
+  coupons: "Coupons",
   new: "New",
 };
 

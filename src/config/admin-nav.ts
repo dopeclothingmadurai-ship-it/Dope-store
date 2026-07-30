@@ -4,6 +4,7 @@ import {
   Layers,
   FolderTree,
   ShoppingBag,
+  Ticket,
   Users,
 } from "lucide-react";
 
@@ -42,5 +43,9 @@ export const ADMIN_NAV: AdminNavGroup[] = [
       { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
       { label: "Customers", href: "/admin/customers", icon: Users },
     ],
+  },
+  {
+    label: "Marketing",
+    items: [{ label: "Coupons", href: "/admin/coupons", icon: Ticket }],
   },
 ];
