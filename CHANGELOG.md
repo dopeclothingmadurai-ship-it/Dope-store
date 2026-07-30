@@ -5,6 +5,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Premium Products page redesign (UI only)
+
+Redesigned the admin Products list into a luxury fashion CMS view. No schema,
+server-action, or business-logic changes; search, sort, pagination, CRUD, auth
+and authorization are unchanged.
+
+- Premium header (large title + subtitle + white "New Product" pill) and a
+  Shopify/Linear-style toolbar: search, status / category / collection filters,
+  sort control, clear-filters, and a right-aligned product count.
+- Redesigned rows: product cell with rounded thumbnail (hover zoom), name,
+  SKU and collection badge; category; inventory with available/reserved and a
+  low-stock (orange) / out-of-stock (red) / in-stock (green) dot; premium
+  status pills with a colored indicator; price shown as a bold amount + "INR";
+  and an overflow "…" action menu (Edit, Archive/Restore).
+- Premium empty state, responsive mobile product cards, and subtle motion.
+- Additive read-layer support (no business-logic change): `listProducts` now
+  accepts status/category/collection filters and enriches each row with a
+  representative SKU, variant count, aggregate inventory and collection names.
+
 ### Premium admin dashboard redesign (UI only)
 
 A visual overhaul of the admin into a premium dark SaaS dashboard. No business

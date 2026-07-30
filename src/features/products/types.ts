@@ -10,6 +10,7 @@ export type InventoryMovement = Tables<"inventory_movements">;
 export type InventoryMovementItem = InventoryMovement & { sku: string };
 
 export type ProductSort = "title" | "price" | "status" | "created";
+export type ProductStatus = Enums<"product_status">;
 
 export type VariantWithInventory = ProductVariant & {
   inventory: Inventory | null;
@@ -18,6 +19,20 @@ export type VariantWithInventory = ProductVariant & {
 export type ProductListItem = Product & {
   primaryImageUrl: string | null;
   categoryName: string | null;
+  sku: string | null;
+  variantCount: number;
+  available: number;
+  reserved: number;
+  lowStock: boolean;
+  outOfStock: boolean;
+  collectionNames: string[];
+};
+
+/** Active list filters, echoed back so the toolbar can reflect them. */
+export type ProductFilters = {
+  status: ProductStatus | null;
+  categoryId: string | null;
+  collectionId: string | null;
 };
 
 export type ProductDetail = Product & {
@@ -33,6 +48,7 @@ export type ProductListResult = {
   pageSize: number;
   sort: ProductSort;
   dir: "asc" | "desc";
+  filters: ProductFilters;
 };
 
 /** Minimal product option used by the collection assignment picker. */
