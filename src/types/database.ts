@@ -198,6 +198,180 @@ export type Database = {
           },
         ];
       };
+      order_events: {
+        Row: {
+          created_at: string;
+          id: string;
+          kind: string;
+          message: string;
+          order_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          kind: string;
+          message: string;
+          order_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          message?: string;
+          order_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "order_events_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      order_items: {
+        Row: {
+          created_at: string;
+          id: string;
+          order_id: string;
+          product_id: string | null;
+          product_title: string;
+          quantity: number;
+          sku: string | null;
+          subtotal: number;
+          unit_price: number;
+          variant_id: string | null;
+          variant_label: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          order_id: string;
+          product_id?: string | null;
+          product_title: string;
+          quantity: number;
+          sku?: string | null;
+          subtotal: number;
+          unit_price: number;
+          variant_id?: string | null;
+          variant_label?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          order_id?: string;
+          product_id?: string | null;
+          product_title?: string;
+          quantity?: number;
+          sku?: string | null;
+          subtotal?: number;
+          unit_price?: number;
+          variant_id?: string | null;
+          variant_label?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: false;
+            referencedRelation: "products";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "order_items_variant_id_fkey";
+            columns: ["variant_id"];
+            isOneToOne: false;
+            referencedRelation: "product_variants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      orders: {
+        Row: {
+          billing_address: Json | null;
+          channel: Database["public"]["Enums"]["order_channel"];
+          created_at: string;
+          currency: string;
+          customer_email: string | null;
+          customer_name: string | null;
+          customer_note: string | null;
+          customer_phone: string | null;
+          discount_total: number;
+          fulfillment_status: Database["public"]["Enums"]["fulfillment_status"];
+          grand_total: number;
+          id: string;
+          order_number: string;
+          payment_method: string | null;
+          payment_status: Database["public"]["Enums"]["payment_status"];
+          placed_at: string;
+          shipping_address: Json | null;
+          shipping_total: number;
+          staff_note: string | null;
+          status: Database["public"]["Enums"]["order_status"];
+          subtotal: number;
+          tax_total: number;
+          updated_at: string;
+        };
+        Insert: {
+          billing_address?: Json | null;
+          channel?: Database["public"]["Enums"]["order_channel"];
+          created_at?: string;
+          currency?: string;
+          customer_email?: string | null;
+          customer_name?: string | null;
+          customer_note?: string | null;
+          customer_phone?: string | null;
+          discount_total?: number;
+          fulfillment_status?: Database["public"]["Enums"]["fulfillment_status"];
+          grand_total?: number;
+          id?: string;
+          order_number?: string;
+          payment_method?: string | null;
+          payment_status?: Database["public"]["Enums"]["payment_status"];
+          placed_at?: string;
+          shipping_address?: Json | null;
+          shipping_total?: number;
+          staff_note?: string | null;
+          status?: Database["public"]["Enums"]["order_status"];
+          subtotal?: number;
+          tax_total?: number;
+          updated_at?: string;
+        };
+        Update: {
+          billing_address?: Json | null;
+          channel?: Database["public"]["Enums"]["order_channel"];
+          created_at?: string;
+          currency?: string;
+          customer_email?: string | null;
+          customer_name?: string | null;
+          customer_note?: string | null;
+          customer_phone?: string | null;
+          discount_total?: number;
+          fulfillment_status?: Database["public"]["Enums"]["fulfillment_status"];
+          grand_total?: number;
+          id?: string;
+          order_number?: string;
+          payment_method?: string | null;
+          payment_status?: Database["public"]["Enums"]["payment_status"];
+          placed_at?: string;
+          shipping_address?: Json | null;
+          shipping_total?: number;
+          staff_note?: string | null;
+          status?: Database["public"]["Enums"]["order_status"];
+          subtotal?: number;
+          tax_total?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       product_media: {
         Row: {
           alt: string | null;
@@ -409,8 +583,20 @@ export type Database = {
     };
     Enums: {
       collection_type: "manual" | "automated";
+      fulfillment_status:
+        | "unfulfilled"
+        | "processing"
+        | "packed"
+        | "shipped"
+        | "delivered"
+        | "cancelled";
       inventory_movement_reason:
         "restock" | "manual_adjustment" | "correction" | "sale" | "return";
+      order_channel: "online" | "pos";
+      order_status:
+        "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+      payment_status:
+        "pending" | "paid" | "partially_refunded" | "refunded" | "failed";
       product_status: "draft" | "active" | "archived";
     };
     CompositeTypes: {
@@ -540,12 +726,35 @@ export const Constants = {
   public: {
     Enums: {
       collection_type: ["manual", "automated"],
+      fulfillment_status: [
+        "unfulfilled",
+        "processing",
+        "packed",
+        "shipped",
+        "delivered",
+        "cancelled",
+      ],
       inventory_movement_reason: [
         "restock",
         "manual_adjustment",
         "correction",
         "sale",
         "return",
+      ],
+      order_channel: ["online", "pos"],
+      order_status: [
+        "pending",
+        "processing",
+        "shipped",
+        "delivered",
+        "cancelled",
+      ],
+      payment_status: [
+        "pending",
+        "paid",
+        "partially_refunded",
+        "refunded",
+        "failed",
       ],
       product_status: ["draft", "active", "archived"],
     },

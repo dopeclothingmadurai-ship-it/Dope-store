@@ -12,6 +12,7 @@ const LABELS: Record<string, string> = {
   products: "Products",
   categories: "Categories",
   collections: "Collections",
+  orders: "Orders",
   new: "New",
 };
 
@@ -30,10 +31,13 @@ function buildCrumbs(pathname: string): Crumb[] {
     // A dynamic id segment is shown as an action label based on its parent.
     if (UUID_RE.test(segment)) {
       const parent = segments[index - 1];
-      crumbs.push({
-        label: parent === "collections" ? "Manage" : "Edit",
-        href,
-      });
+      const label =
+        parent === "collections"
+          ? "Manage"
+          : parent === "orders"
+            ? "Details"
+            : "Edit";
+      crumbs.push({ label, href });
       return;
     }
     crumbs.push({

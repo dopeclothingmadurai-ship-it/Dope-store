@@ -1,4 +1,10 @@
-import { type LucideIcon, Package, Layers, FolderTree } from "lucide-react";
+import {
+  type LucideIcon,
+  Package,
+  Layers,
+  FolderTree,
+  ShoppingBag,
+} from "lucide-react";
 
 export type AdminNavItem = {
   label: string;
@@ -11,7 +17,7 @@ export type AdminNavGroup = {
   items: AdminNavItem[];
 };
 
-/** Admin sidebar navigation. Phase 2 ships the Catalog group. */
+/** Admin sidebar navigation. Phase 2 ships Catalog; Phase 4 adds Sales. */
 export const ADMIN_NAV: AdminNavGroup[] = [
   {
     label: "Catalog",
@@ -28,5 +34,9 @@ export const ADMIN_NAV: AdminNavGroup[] = [
         icon: Layers,
       },
     ],
+  },
+  {
+    label: "Sales",
+    items: [{ label: "Orders", href: "/admin/orders", icon: ShoppingBag }],
   },
 ];
