@@ -27,6 +27,9 @@ const COLLAPSED = 76;
 
 function useActive(href: string) {
   const pathname = usePathname();
+  // The dashboard lives at the admin root, so it must match exactly — otherwise
+  // every /admin/* route would light it up.
+  if (href === "/admin") return pathname === "/admin";
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 

@@ -1,5 +1,7 @@
 import {
   type LucideIcon,
+  BarChart3,
+  LayoutDashboard,
   Package,
   Layers,
   FolderTree,
@@ -21,6 +23,13 @@ export type AdminNavGroup = {
 
 /** Admin sidebar navigation. Phase 2 ships Catalog; Phase 4 adds Sales. */
 export const ADMIN_NAV: AdminNavGroup[] = [
+  {
+    label: "Overview",
+    items: [
+      { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+      { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
+    ],
+  },
   {
     label: "Catalog",
     items: [
