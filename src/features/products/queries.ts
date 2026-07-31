@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 import {
   type AssignableProduct,
+  type BulkProductSummary,
   type InventoryMovementItem,
   type ProductDetail,
   type ProductListResult,
@@ -325,4 +326,46 @@ export async function listAssignableProducts(): Promise<AssignableProduct[]> {
     .order("title", { ascending: true });
   if (error) throw fromPostgrestError(error);
   return data;
+}
+
+/** Price + total stock for the selected products, for bulk-edit previews. */
+export async function getBulkProductSummaries(
+  ids: string[],
+): Promise<BulkProductSummary[]> {
+  if (ids.length === 0) return [];
+  const db = createAdminClient();
+
+  const [productsResult, variantsResult] = await Promise.all([
+    db.from("products").select("id, title, base_price").in("id", ids),
+    db
+      .from("product_variants")
+      .select("product_id, inventory(quantity)")
+      .in("product_id", ids),
+  ]);
+  if (productsResult.error) throw fromPostgrestError(productsResult.error);
+  if (variantsResult.error) throw fromPostgrestError(variantsResult.error);
+
+  const stockByProduct = new Map<string, number>();
+  const variantsByProduct = new Map<string, number>();
+  for (const variant of variantsResult.data) {
+    const quantity = variant.inventory?.quantity ?? 0;
+    stockByProduct.set(
+      variant.product_id,
+      (stockByProduct.get(variant.product_id) ?? 0) + quantity,
+    );
+    variantsByProduct.set(
+      variant.product_id,
+      (variantsByProduct.get(variant.product_id) ?? 0) + 1,
+    );
+  }
+
+  return productsResult.data
+    .map((product) => ({
+      id: product.id,
+      title: product.title,
+      basePrice: product.base_price,
+      stock: stockByProduct.get(product.id) ?? 0,
+      variantCount: variantsByProduct.get(product.id) ?? 0,
+    }))
+    .sort((a, b) => a.title.localeCompare(b.title));
 }

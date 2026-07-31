@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5";
   };
+  graphql_public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json;
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
   public: {
     Tables: {
       categories: {
@@ -768,6 +793,18 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      bulk_adjust_product_inventory: {
+        Args: { p_ids: string[]; p_mode: string; p_value: number };
+        Returns: number;
+      };
+      bulk_edit_product_tags: {
+        Args: { p_add: boolean; p_ids: string[]; p_tags: string[] };
+        Returns: number;
+      };
+      bulk_update_product_prices: {
+        Args: { p_ids: string[]; p_mode: string; p_value: number };
+        Returns: number;
+      };
       create_pos_order: { Args: { p_payload: Json }; Returns: string };
       duplicate_product: {
         Args: {
@@ -923,6 +960,9 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       collection_type: ["manual", "automated"],

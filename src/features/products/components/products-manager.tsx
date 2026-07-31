@@ -27,6 +27,7 @@ import { EmptyState } from "@/components/admin/empty-state";
 import { ExportButton } from "@/components/admin/export-button";
 import { LinkButton } from "@/components/admin/link-button";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,6 +43,8 @@ import {
   duplicateProductAction,
   restoreProductAction,
 } from "../actions";
+import { BulkActionBar } from "./bulk-action-bar";
+import { useProductSelection } from "./use-product-selection";
 import {
   type ProductListItem,
   type ProductListResult,
@@ -258,6 +261,23 @@ export function ProductsManager({
     archive: boolean;
   } | null>(null);
   const [working, setWorking] = useState(false);
+
+  const {
+    ids: selectedIds,
+    toggle: toggleSelected,
+    setMany: setManySelected,
+    clear: clearSelection,
+  } = useProductSelection();
+  const pageIds = result.items.map((product) => product.id);
+  const allPageSelected =
+    pageIds.length > 0 && pageIds.every((id) => selectedIds.has(id));
+  const somePageSelected =
+    !allPageSelected && pageIds.some((id) => selectedIds.has(id));
+
+  function clearAndRefresh() {
+    clearSelection();
+    router.refresh();
+  }
 
   const totalPages = Math.max(1, Math.ceil(result.total / result.pageSize));
   const filtersActive = Boolean(
@@ -521,6 +541,16 @@ export function ProductsManager({
             <table className="w-full text-sm">
               <thead className="bg-white/[0.02]">
                 <tr className="border-border border-b">
+                  <th className="w-10 py-3 pr-2 pl-5">
+                    <Checkbox
+                      aria-label="Select all on this page"
+                      checked={allPageSelected}
+                      indeterminate={somePageSelected}
+                      onCheckedChange={(checked) =>
+                        setManySelected(pageIds, checked === true)
+                      }
+                    />
+                  </th>
                   <th className="text-muted-foreground px-5 py-3 text-left text-xs font-medium">
                     <button
                       type="button"
@@ -561,8 +591,18 @@ export function ProductsManager({
                 {result.items.map((product) => (
                   <tr
                     key={product.id}
-                    className="border-border/70 group border-b transition-colors last:border-0 hover:bg-white/[0.03]"
+                    className={cn(
+                      "border-border/70 group border-b transition-colors last:border-0 hover:bg-white/[0.03]",
+                      selectedIds.has(product.id) && "bg-white/[0.04]",
+                    )}
                   >
+                    <td className="py-4 pr-2 pl-5">
+                      <Checkbox
+                        aria-label={`Select ${product.title}`}
+                        checked={selectedIds.has(product.id)}
+                        onCheckedChange={() => toggleSelected(product.id)}
+                      />
+                    </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         <Thumbnail
@@ -622,9 +662,19 @@ export function ProductsManager({
             {result.items.map((product) => (
               <div
                 key={product.id}
-                className="bg-card rounded-2xl border p-4 transition-colors hover:border-white/20"
+                className={cn(
+                  "bg-card rounded-2xl border p-4 transition-colors hover:border-white/20",
+                  selectedIds.has(product.id) &&
+                    "border-white/25 bg-white/[0.04]",
+                )}
               >
                 <div className="flex items-start gap-3">
+                  <Checkbox
+                    aria-label={`Select ${product.title}`}
+                    className="mt-1"
+                    checked={selectedIds.has(product.id)}
+                    onCheckedChange={() => toggleSelected(product.id)}
+                  />
                   <Thumbnail
                     url={product.primaryImageUrl}
                     alt={product.title}
@@ -703,6 +753,13 @@ export function ProductsManager({
         destructive={confirm?.archive ?? false}
         loading={working}
         onConfirm={runConfirm}
+      />
+
+      <BulkActionBar
+        ids={[...selectedIds]}
+        categories={categories}
+        collections={collections}
+        onDone={clearAndRefresh}
       />
     </div>
   );

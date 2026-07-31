@@ -58,4 +58,13 @@ export type AssignableProduct = {
   status: Enums<"product_status">;
 };
 
+/** Price + stock snapshot for a selected product, used by bulk-edit previews. */
+export type BulkProductSummary = {
+  id: string;
+  title: string;
+  basePrice: number;
+  stock: number;
+  variantCount: number;
+};
+
 export type { ProductFormValues, VariantFormValues } from "./schema";
