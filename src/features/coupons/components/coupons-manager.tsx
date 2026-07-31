@@ -17,6 +17,7 @@ import { toast } from "sonner";
 
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { EmptyState } from "@/components/admin/empty-state";
+import { ExportButton } from "@/components/admin/export-button";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -265,12 +266,15 @@ export function CouponsManager({
           ) : null}
         </div>
 
-        <Button
-          onClick={openCreate}
-          className="h-9 rounded-full px-4 shadow-lg shadow-black/30 transition-transform hover:-translate-y-0.5"
-        >
-          <Plus /> New Coupon
-        </Button>
+        <div className="flex items-center gap-2">
+          <ExportButton entity="coupons" />
+          <Button
+            onClick={openCreate}
+            className="h-9 rounded-full px-4 shadow-lg shadow-black/30 transition-transform hover:-translate-y-0.5"
+          >
+            <Plus /> New Coupon
+          </Button>
+        </div>
       </div>
 
       {result.items.length === 0 ? (

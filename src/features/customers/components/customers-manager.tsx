@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Search, Users, X } from "lucide-react";
 
 import { EmptyState } from "@/components/admin/empty-state";
+import { ExportButton } from "@/components/admin/export-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatPaise } from "@/lib/money";
@@ -136,9 +137,12 @@ export function CustomersManager({
           ) : null}
         </div>
 
-        <p className="text-muted-foreground shrink-0 text-sm tabular-nums">
-          {result.total} {result.total === 1 ? "Customer" : "Customers"}
-        </p>
+        <div className="flex shrink-0 items-center gap-3">
+          <p className="text-muted-foreground text-sm tabular-nums">
+            {result.total} {result.total === 1 ? "Customer" : "Customers"}
+          </p>
+          <ExportButton entity="customers" />
+        </div>
       </div>
 
       {result.items.length === 0 ? (

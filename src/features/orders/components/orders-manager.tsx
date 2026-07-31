@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 
 import { EmptyState } from "@/components/admin/empty-state";
+import { ExportButton } from "@/components/admin/export-button";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -288,9 +289,12 @@ export function OrdersManager({
           ) : null}
         </div>
 
-        <p className="text-muted-foreground shrink-0 text-sm tabular-nums">
-          {result.total} {result.total === 1 ? "Order" : "Orders"}
-        </p>
+        <div className="flex shrink-0 items-center gap-3">
+          <p className="text-muted-foreground text-sm tabular-nums">
+            {result.total} {result.total === 1 ? "Order" : "Orders"}
+          </p>
+          <ExportButton entity="orders" />
+        </div>
       </div>
 
       {result.items.length === 0 ? (

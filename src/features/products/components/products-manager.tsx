@@ -24,6 +24,7 @@ import { toast } from "sonner";
 
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { EmptyState } from "@/components/admin/empty-state";
+import { ExportButton } from "@/components/admin/export-button";
 import { LinkButton } from "@/components/admin/link-button";
 import { Button } from "@/components/ui/button";
 import {
@@ -369,12 +370,15 @@ export function ProductsManager({
             Manage your product catalog, inventory and merchandising.
           </p>
         </div>
-        <LinkButton
-          href="/admin/catalog/products/new"
-          className="h-10 rounded-full px-5 shadow-lg shadow-black/30 transition-transform hover:-translate-y-0.5"
-        >
-          <Plus /> New Product
-        </LinkButton>
+        <div className="flex items-center gap-2">
+          <ExportButton entity="products" />
+          <LinkButton
+            href="/admin/catalog/products/new"
+            className="h-10 rounded-full px-5 shadow-lg shadow-black/30 transition-transform hover:-translate-y-0.5"
+          >
+            <Plus /> New Product
+          </LinkButton>
+        </div>
       </div>
 
       {/* Toolbar */}

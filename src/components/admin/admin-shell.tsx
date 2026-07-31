@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { type ReactNode, useEffect, useState } from "react";
 import {
   LogOut,
@@ -14,9 +14,12 @@ import {
 } from "lucide-react";
 
 import { Breadcrumbs } from "@/components/admin/breadcrumbs";
+import {
+  CommandPalette,
+  OPEN_COMMAND_PALETTE_EVENT,
+} from "@/components/admin/command-palette";
 import { DopeLogo } from "@/components/admin/logo";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ADMIN_NAV } from "@/config/admin-nav";
 import { signOutAction } from "@/features/auth/actions";
 import { cn } from "@/lib/utils";
@@ -210,11 +213,9 @@ export function AdminShell({
   userEmail: string;
   children: ReactNode;
 }) {
-  const router = useRouter();
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [term, setTerm] = useState("");
 
   useEffect(() => {
     setCollapsed(window.localStorage.getItem(STORAGE_KEY) === "1");
@@ -233,16 +234,14 @@ export function AdminShell({
     setMobileOpen(false);
   }, [pathname]);
 
-  function onSearch(event: React.FormEvent) {
-    event.preventDefault();
-    const q = term.trim();
-    router.push(
-      `/admin/catalog/products${q ? `?q=${encodeURIComponent(q)}` : ""}`,
-    );
+  function openCommandPalette() {
+    window.dispatchEvent(new Event(OPEN_COMMAND_PALETTE_EVENT));
   }
 
   return (
     <div className="bg-background text-foreground min-h-screen">
+      <CommandPalette />
+
       {/* Desktop sidebar */}
       <motion.aside
         initial={false}
@@ -321,18 +320,29 @@ export function AdminShell({
 
           <Breadcrumbs />
 
-          <form onSubmit={onSearch} className="ml-auto hidden sm:block">
-            <div className="relative">
-              <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
-              <Input
-                value={term}
-                onChange={(event) => setTerm(event.target.value)}
-                placeholder="Search products…"
-                aria-label="Search products"
-                className="h-9 w-44 rounded-full pl-8 lg:w-64"
-              />
-            </div>
-          </form>
+          <button
+            type="button"
+            onClick={openCommandPalette}
+            aria-label="Search"
+            className="text-muted-foreground hover:text-foreground ml-auto hidden h-9 w-44 items-center gap-2 rounded-full border px-3 text-sm transition-colors hover:border-white/20 sm:flex lg:w-64"
+          >
+            <Search className="size-4 shrink-0" />
+            <span className="flex-1 text-left">Search…</span>
+            <kbd className="border-border rounded border px-1.5 text-[10px] font-medium">
+              ⌘K
+            </kbd>
+          </button>
+
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="ml-auto sm:hidden"
+            onClick={openCommandPalette}
+            title="Search"
+          >
+            <Search className="size-4" />
+            <span className="sr-only">Search</span>
+          </Button>
 
           <span
             className="bg-muted ml-auto flex size-8 items-center justify-center rounded-full text-xs font-semibold text-white ring-1 ring-white/10 sm:ml-0"
