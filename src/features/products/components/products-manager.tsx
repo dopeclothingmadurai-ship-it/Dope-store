@@ -374,7 +374,7 @@ export function ProductsManager({
       toast.error(res.error.message);
       return;
     }
-    toast.success(`Duplicated as “${res.data.title}”`);
+    toast.success("Product duplicated successfully");
     router.push(`/admin/catalog/products/${res.data.id}`);
   }
 

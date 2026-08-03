@@ -10,6 +10,7 @@ import {
   Layers,
   MoreHorizontal,
   Package,
+  PackageX,
   Tag,
   Trash2,
   Upload,
@@ -53,7 +54,7 @@ import { BulkPriceDialog } from "./bulk-price-dialog";
 
 type Option = { id: string; name: string };
 
-type ConfirmKind = "publish" | "unpublish" | "archive" | "delete" | "duplicate";
+type ConfirmKind = "archive" | "delete";
 type FieldKind = "category" | "collection" | "brand" | "tags" | null;
 
 const selectClass = cn(
@@ -65,25 +66,12 @@ const CONFIRM_COPY: Record<
   ConfirmKind,
   { title: string; description: string; label: string; destructive: boolean }
 > = {
-  publish: {
-    title: "Publish products?",
-    description:
-      "Selected products become active and visible on the storefront.",
-    label: "Publish",
-    destructive: false,
-  },
-  unpublish: {
-    title: "Move to draft?",
-    description: "Selected products become drafts and leave the storefront.",
-    label: "Unpublish",
-    destructive: false,
-  },
   archive: {
     title: "Archive products?",
     description:
-      "Selected products are hidden from the storefront. Reversible.",
+      "Selected products are hidden from the storefront. You can restore them later.",
     label: "Archive",
-    destructive: false,
+    destructive: true,
   },
   delete: {
     title: "Delete products permanently?",
@@ -91,12 +79,6 @@ const CONFIRM_COPY: Record<
       "This removes the products, their variants, media and stock. Past orders keep their line items. This cannot be undone.",
     label: "Delete",
     destructive: true,
-  },
-  duplicate: {
-    title: "Duplicate products?",
-    description: "Each selected product is copied as a new draft.",
-    label: "Duplicate",
-    destructive: false,
   },
 };
 
@@ -111,8 +93,8 @@ export function BulkActionBar({
   collections: Option[];
   onDone: () => void;
 }) {
+  const [busy, setBusy] = useState(false);
   const [confirm, setConfirm] = useState<ConfirmKind | null>(null);
-  const [working, setWorking] = useState(false);
   const [field, setField] = useState<FieldKind>(null);
   const [priceOpen, setPriceOpen] = useState(false);
   const [inventoryOpen, setInventoryOpen] = useState(false);
@@ -127,31 +109,32 @@ export function BulkActionBar({
   const count = ids.length;
 
   function finish(res: Result<number>, verb: string) {
-    setWorking(false);
+    setBusy(false);
     if (!res.ok) {
       toast.error(res.error.message);
-      return false;
+      return;
     }
     toast.success(`${verb} ${res.data} product${res.data === 1 ? "" : "s"}`);
     setConfirm(null);
     setField(null);
     onDone();
-    return true;
+  }
+
+  // Safe actions run in one click, no dialog.
+  async function runImmediate(
+    run: () => Promise<Result<number>>,
+    verb: string,
+  ) {
+    setBusy(true);
+    finish(await run(), verb);
   }
 
   async function runConfirm() {
     if (!confirm) return;
-    setWorking(true);
-    if (confirm === "publish")
-      finish(await bulkStatusAction(ids, "active"), "Published");
-    else if (confirm === "unpublish")
-      finish(await bulkStatusAction(ids, "draft"), "Unpublished");
-    else if (confirm === "archive")
+    setBusy(true);
+    if (confirm === "archive")
       finish(await bulkStatusAction(ids, "archived"), "Archived");
-    else if (confirm === "delete")
-      finish(await bulkDeleteAction(ids), "Deleted");
-    else if (confirm === "duplicate")
-      finish(await bulkDuplicateAction(ids), "Duplicated");
+    else finish(await bulkDeleteAction(ids), "Deleted");
   }
 
   function openField(kind: Exclude<FieldKind, null>) {
@@ -164,7 +147,7 @@ export function BulkActionBar({
   }
 
   async function submitField() {
-    setWorking(true);
+    setBusy(true);
     if (field === "category") {
       finish(
         await bulkCategoryAction(ids, { categoryId: categoryId || null }),
@@ -172,7 +155,7 @@ export function BulkActionBar({
       );
     } else if (field === "collection") {
       if (!collectionId) {
-        setWorking(false);
+        setBusy(false);
         toast.error("Choose a collection");
         return;
       }
@@ -188,7 +171,7 @@ export function BulkActionBar({
         .map((tag) => tag.trim())
         .filter(Boolean);
       if (tags.length === 0) {
-        setWorking(false);
+        setBusy(false);
         toast.error("Enter at least one tag");
         return;
       }
@@ -209,7 +192,7 @@ export function BulkActionBar({
             transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
             className="fixed inset-x-0 bottom-4 z-40 flex justify-center px-4"
           >
-            <div className="bg-popover/95 flex max-w-full items-center gap-2 overflow-x-auto rounded-2xl border p-2 shadow-2xl ring-1 ring-white/10 backdrop-blur-xl">
+            <div className="bg-popover/95 flex max-w-full items-center gap-1 overflow-x-auto rounded-2xl border p-2 shadow-2xl ring-1 ring-white/10 backdrop-blur-xl">
               <div className="flex shrink-0 items-center gap-2 pr-1 pl-2">
                 <span className="text-sm font-medium whitespace-nowrap text-white tabular-nums">
                   {count} selected
@@ -229,7 +212,13 @@ export function BulkActionBar({
                 variant="ghost"
                 size="sm"
                 className="shrink-0"
-                onClick={() => setConfirm("publish")}
+                disabled={busy}
+                onClick={() =>
+                  runImmediate(
+                    () => bulkStatusAction(ids, "active"),
+                    "Published",
+                  )
+                }
               >
                 <Package /> Publish
               </Button>
@@ -237,14 +226,7 @@ export function BulkActionBar({
                 variant="ghost"
                 size="sm"
                 className="shrink-0"
-                onClick={() => setConfirm("archive")}
-              >
-                <Archive /> Archive
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="shrink-0"
+                disabled={busy}
                 onClick={() => setPriceOpen(true)}
               >
                 <DollarSign /> Price
@@ -253,34 +235,46 @@ export function BulkActionBar({
                 variant="ghost"
                 size="sm"
                 className="shrink-0"
+                disabled={busy}
                 onClick={() => setInventoryOpen(true)}
               >
                 <Upload /> Stock
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="shrink-0"
-                onClick={() => setConfirm("duplicate")}
-              >
-                <Copy /> Duplicate
               </Button>
 
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
-                    <Button variant="ghost" size="sm" className="shrink-0" />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="shrink-0"
+                      disabled={busy}
+                    />
                   }
                 >
-                  <MoreHorizontal /> More
+                  <MoreHorizontal /> More actions
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
                   side="top"
-                  className="min-w-48"
+                  className="min-w-52"
                 >
-                  <DropdownMenuItem onClick={() => setConfirm("unpublish")}>
-                    <Package /> Unpublish (draft)
+                  <DropdownMenuItem
+                    onClick={() =>
+                      runImmediate(
+                        () => bulkStatusAction(ids, "draft"),
+                        "Unpublished",
+                      )
+                    }
+                  >
+                    <PackageX /> Unpublish
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      runImmediate(() => bulkDuplicateAction(ids), "Duplicated")
+                    }
+                  >
+                    <Copy /> Duplicate
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => openField("category")}>
@@ -296,6 +290,9 @@ export function BulkActionBar({
                     <Tag /> Add / remove tags
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setConfirm("archive")}>
+                    <Archive /> Archive
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     variant="destructive"
                     onClick={() => setConfirm("delete")}
@@ -309,7 +306,7 @@ export function BulkActionBar({
         ) : null}
       </AnimatePresence>
 
-      {/* Confirmations */}
+      {/* Destructive-only confirmations */}
       <ConfirmDialog
         open={confirm !== null}
         onOpenChange={(next) => {
@@ -319,7 +316,7 @@ export function BulkActionBar({
         description={confirmCopy?.description}
         confirmLabel={confirmCopy ? `${confirmCopy.label} ${count}` : "Confirm"}
         destructive={confirmCopy?.destructive ?? false}
-        loading={working}
+        loading={busy}
         onConfirm={runConfirm}
       />
 
@@ -417,13 +414,11 @@ export function BulkActionBar({
           ) : null}
 
           <DialogFooter>
-            <DialogClose
-              render={<Button variant="outline" disabled={working} />}
-            >
+            <DialogClose render={<Button variant="outline" disabled={busy} />}>
               Cancel
             </DialogClose>
-            <Button onClick={submitField} disabled={working}>
-              {working ? "Working…" : "Apply"}
+            <Button onClick={submitField} disabled={busy}>
+              {busy ? "Working…" : "Apply"}
             </Button>
           </DialogFooter>
         </DialogContent>
