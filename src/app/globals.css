@@ -78,6 +78,8 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-geist-sans);
+  /* Editorial display serif — storefront headlines only */
+  --font-display: var(--font-cormorant);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -191,6 +193,117 @@
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: rgba(255, 255, 255, 0.08);
   --sidebar-ring: rgba(255, 255, 255, 0.32);
+}
+
+/* ===========================================================================
+ *  STOREFRONT THEME — matte black · deep charcoal · muted metallic gold
+ *  White is used for typography only. No bright colors, no neon.
+ * ========================================================================= */
+.storefront {
+  --radius: 0.25rem;
+
+  --background: #0a0a0b; /* matte black */
+  --foreground: #f4f3f1; /* near-white (typography only) */
+
+  --card: #131315; /* deep charcoal */
+  --card-foreground: #f4f3f1;
+  --popover: #0f0f10;
+  --popover-foreground: #f4f3f1;
+
+  --primary: #f4f3f1;
+  --primary-foreground: #0a0a0b;
+  --secondary: #17171a;
+  --secondary-foreground: #f4f3f1;
+  --muted: #131315;
+  --muted-foreground: #8f8d88; /* warm grey */
+  --accent: #17171a;
+  --accent-foreground: #f4f3f1;
+
+  /* Muted metallic gold — the single accent */
+  --gold: #c2a468;
+  --gold-soft: #d8c299;
+  --brand: #c2a468;
+  --brand-foreground: #0a0a0b;
+
+  --destructive: #d24a3f;
+  --destructive-foreground: #f4f3f1;
+
+  --border: rgba(255, 255, 255, 0.09);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: rgba(194, 164, 104, 0.5);
+}
+
+@theme inline {
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+}
+
+/* Storefront base: matte black canvas, smooth scroll, refined selection. */
+.storefront {
+  background: var(--background);
+  color: var(--foreground);
+}
+/* Ensure the page canvas behind the storefront is matte black too — no light
+ * flash on overscroll or during transitions. */
+html:has(.storefront),
+body:has(.storefront) {
+  background-color: #0a0a0b;
+}
+.storefront ::selection {
+  background: rgba(194, 164, 104, 0.22);
+  color: #ffffff;
+}
+.storefront * {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+}
+.storefront *::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+.storefront *::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 9999px;
+}
+
+/* Luxury loader — logo with a soft gold glow + a sweeping gold hairline. */
+@keyframes dope-glow {
+  0%,
+  100% {
+    opacity: 0.6;
+    filter: drop-shadow(0 0 10px rgba(194, 164, 104, 0.3));
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 26px rgba(194, 164, 104, 0.6));
+  }
+}
+.dope-glow {
+  animation: dope-glow 1.8s ease-in-out infinite;
+}
+@keyframes dope-sweep {
+  0% {
+    transform: translateX(-110%);
+  }
+  100% {
+    transform: translateX(110%);
+  }
+}
+.dope-sweep {
+  animation: dope-sweep 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .storefront *,
+  .storefront *::before,
+  .storefront *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Premium admin polish: refined scrollbars + selection in the dark theme. */
