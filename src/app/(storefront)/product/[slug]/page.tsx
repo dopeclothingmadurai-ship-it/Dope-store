@@ -2,6 +2,13 @@ import { type Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import {
+  ProductReviews,
+  getCustomerReview,
+  getReviewSummary,
+  hasPurchasedProduct,
+  listProductReviews,
+} from "@/features/reviews";
 import { ProductCard } from "@/features/storefront/components/product-card";
 import { ProductDetail } from "@/features/storefront/components/product-detail";
 import { Reveal } from "@/features/storefront/components/reveal";
@@ -9,6 +16,7 @@ import {
   getStoreProduct,
   listStoreProducts,
 } from "@/features/storefront/queries";
+import { getCustomer } from "@/lib/auth/customer";
 
 export const dynamic = "force-dynamic";
 
@@ -36,9 +44,16 @@ export default async function ProductPage({
   const product = await getStoreProduct(slug);
   if (!product) notFound();
 
-  const others = (await listStoreProducts(5)).filter(
-    (item) => item.slug !== slug,
-  );
+  const customer = await getCustomer();
+  const [others, reviews, summary, hasPurchased, existing] = await Promise.all([
+    listStoreProducts(5).then((items) =>
+      items.filter((item) => item.slug !== slug),
+    ),
+    listProductReviews(product.id),
+    getReviewSummary(product.id),
+    customer ? hasPurchasedProduct(customer.email, product.id) : Promise.resolve(false),
+    customer ? getCustomerReview(customer.email, product.id) : Promise.resolve(null),
+  ]);
 
   return (
     <div className="mx-auto max-w-[1400px] px-5 pt-24 pb-8 sm:px-8 sm:pt-32">
@@ -51,6 +66,18 @@ export default async function ProductPage({
       </nav>
 
       <ProductDetail product={product} />
+
+      <ProductReviews
+        productId={product.id}
+        productSlug={product.slug}
+        summary={summary}
+        reviews={reviews}
+        eligibility={{
+          signedIn: customer !== null,
+          hasPurchased,
+          existing,
+        }}
+      />
 
       {others.length > 0 ? (
         <section className="mt-28 sm:mt-36">
