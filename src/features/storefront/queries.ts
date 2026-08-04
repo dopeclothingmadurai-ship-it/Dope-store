@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import {
   type StoreProductCard,
   type StoreProductDetail,
+  type StoreReview,
   type StoreVariant,
 } from "./types";
 
@@ -37,30 +38,30 @@ function buildMediaMap(rows: MediaRow[]): Map<string, string[]> {
   return urls;
 }
 
-/** Active products as storefront cards, newest first. */
-export async function listStoreProducts(
-  limit?: number,
+type ProductRow = {
+  id: string;
+  slug: string;
+  title: string;
+  base_price: number;
+  compare_at_price: number | null;
+};
+
+const CARD_COLUMNS = "id, slug, title, base_price, compare_at_price";
+
+/** Attach primary + hover images to a set of product rows. */
+async function toCards(
+  db: ReturnType<typeof createAdminClient>,
+  products: ProductRow[],
 ): Promise<StoreProductCard[]> {
-  const db = createAdminClient();
-  let query = db
-    .from("products")
-    .select("id, slug, title, base_price, compare_at_price")
-    .eq("status", "active")
-    .order("created_at", { ascending: false });
-  if (limit) query = query.limit(limit);
-
-  const { data: products, error } = await query;
-  if (error) throw fromPostgrestError(error);
   if (products.length === 0) return [];
-
-  const { data: media, error: mediaError } = await db
+  const { data: media, error } = await db
     .from("product_media")
     .select("product_id, url, is_primary, position")
     .in(
       "product_id",
       products.map((p) => p.id),
     );
-  if (mediaError) throw fromPostgrestError(mediaError);
+  if (error) throw fromPostgrestError(error);
   const mediaMap = buildMediaMap(media);
 
   return products.map((product) => {
@@ -75,6 +76,63 @@ export async function listStoreProducts(
       hoverImageUrl: images[1] ?? null,
     };
   });
+}
+
+/** Active products as storefront cards, newest first ("This Week at Dope"). */
+export async function listStoreProducts(
+  limit?: number,
+): Promise<StoreProductCard[]> {
+  const db = createAdminClient();
+  let query = db
+    .from("products")
+    .select(CARD_COLUMNS)
+    .eq("status", "active")
+    .order("created_at", { ascending: false });
+  if (limit) query = query.limit(limit);
+
+  const { data: products, error } = await query;
+  if (error) throw fromPostgrestError(error);
+  return toCards(db, products);
+}
+
+/** Products flagged "Show in Curated Fits" from the admin, newest first. */
+export async function listCuratedFits(limit = 12): Promise<StoreProductCard[]> {
+  const db = createAdminClient();
+  const { data: products, error } = await db
+    .from("products")
+    .select(CARD_COLUMNS)
+    .eq("status", "active")
+    .eq("show_in_curated_fits", true)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw fromPostgrestError(error);
+  return toCards(db, products);
+}
+
+/**
+ * Published reviews rated 4.5+ for the homepage testimonials (text only).
+ * Ratings are whole stars, so the 4.5+ bucket is the 5-star reviews.
+ */
+export async function listHomepageTestimonials(
+  limit = 9,
+): Promise<StoreReview[]> {
+  const db = createAdminClient();
+  const { data, error } = await db
+    .from("reviews")
+    .select("id, author_name, rating, body, image_urls, created_at")
+    .eq("status", "published")
+    .gte("rating", 5)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw fromPostgrestError(error);
+  return data.map((review) => ({
+    id: review.id,
+    authorName: review.author_name,
+    rating: review.rating,
+    body: review.body,
+    imageUrls: [],
+    createdAt: review.created_at,
+  }));
 }
 
 /** A single active product for its detail page, or null if unavailable. */

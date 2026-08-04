@@ -295,6 +295,19 @@ body:has(.storefront) {
   animation: dope-sweep 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
+/* Seamless editorial marquee — two identical tracks translated in tandem. */
+@keyframes dope-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+.dope-marquee {
+  animation: dope-marquee 24s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .storefront *,
   .storefront *::before,

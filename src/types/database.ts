@@ -642,6 +642,7 @@ export type Database = {
           id: string;
           seo_description: string | null;
           seo_title: string | null;
+          show_in_curated_fits: boolean;
           slug: string;
           status: Database["public"]["Enums"]["product_status"];
           tags: string[];
@@ -660,6 +661,7 @@ export type Database = {
           id?: string;
           seo_description?: string | null;
           seo_title?: string | null;
+          show_in_curated_fits?: boolean;
           slug: string;
           status?: Database["public"]["Enums"]["product_status"];
           tags?: string[];
@@ -678,6 +680,7 @@ export type Database = {
           id?: string;
           seo_description?: string | null;
           seo_title?: string | null;
+          show_in_curated_fits?: boolean;
           slug?: string;
           status?: Database["public"]["Enums"]["product_status"];
           tags?: string[];
@@ -690,6 +693,57 @@ export type Database = {
             columns: ["category_id"];
             isOneToOne: false;
             referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      reviews: {
+        Row: {
+          author_name: string;
+          body: string;
+          created_at: string;
+          customer_id: string | null;
+          id: string;
+          image_urls: string[];
+          product_id: string;
+          rating: number;
+          status: string;
+        };
+        Insert: {
+          author_name: string;
+          body: string;
+          created_at?: string;
+          customer_id?: string | null;
+          id?: string;
+          image_urls?: string[];
+          product_id: string;
+          rating: number;
+          status?: string;
+        };
+        Update: {
+          author_name?: string;
+          body?: string;
+          created_at?: string;
+          customer_id?: string | null;
+          id?: string;
+          image_urls?: string[];
+          product_id?: string;
+          rating?: number;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "reviews_customer_id_fkey";
+            columns: ["customer_id"];
+            isOneToOne: false;
+            referencedRelation: "customers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reviews_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: false;
+            referencedRelation: "products";
             referencedColumns: ["id"];
           },
         ];

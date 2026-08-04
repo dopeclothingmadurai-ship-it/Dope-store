@@ -59,7 +59,11 @@ export const useCart = create<CartStore>()(
       clear: () => set({ items: [] }),
       setOpen: (open) => set({ open }),
     }),
-    { name: "dope-cart" },
+    {
+      name: "dope-cart",
+      // Only the bag contents persist — never the open/closed UI state.
+      partialize: (state) => ({ items: state.items }),
+    },
   ),
 );
 

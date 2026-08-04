@@ -43,6 +43,7 @@ function toDefaults(product: ProductDetail | null): ProductFormValues {
       basePrice: 0,
       compareAtPrice: null,
       featured: false,
+      showInCuratedFits: false,
       tags: [],
       collectionIds: [],
     };
@@ -59,6 +60,7 @@ function toDefaults(product: ProductDetail | null): ProductFormValues {
     basePrice: product.base_price,
     compareAtPrice: product.compare_at_price,
     featured: product.featured,
+    showInCuratedFits: product.show_in_curated_fits,
     tags: product.tags,
     collectionIds: product.collectionIds,
   };
@@ -264,6 +266,27 @@ export function ProductForm({
               render={({ field }) => (
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Featured</span>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </div>
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="showInCuratedFits"
+              render={({ field }) => (
+                <div className="flex items-center justify-between gap-4">
+                  <div className="space-y-0.5">
+                    <span className="text-sm font-medium">
+                      Show in Curated Fits
+                    </span>
+                    <p className="text-muted-foreground text-xs">
+                      Feature this product in the storefront homepage.
+                    </p>
+                  </div>
                   <Switch
                     checked={field.value}
                     onCheckedChange={field.onChange}

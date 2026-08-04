@@ -98,6 +98,7 @@ function toProductRow(input: ProductFormValues) {
     base_price: input.basePrice,
     compare_at_price: input.compareAtPrice,
     featured: input.featured,
+    show_in_curated_fits: input.showInCuratedFits,
     tags: input.tags,
     seo_title: normalize(input.seoTitle),
     seo_description: normalize(input.seoDescription),

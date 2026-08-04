@@ -16,6 +16,15 @@ export type StoreVariant = {
   price: number; // paise (override or base)
 };
 
+export type StoreReview = {
+  id: string;
+  authorName: string;
+  rating: number;
+  body: string;
+  imageUrls: string[];
+  createdAt: string;
+};
+
 export type StoreProductDetail = {
   id: string;
   slug: string;

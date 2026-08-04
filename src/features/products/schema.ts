@@ -24,6 +24,7 @@ export const productFormSchema = z.object({
   basePrice: paise,
   compareAtPrice: paise.nullable(),
   featured: z.boolean(),
+  showInCuratedFits: z.boolean(),
   tags: z.array(z.string().trim().min(1).max(40)).max(30, "Too many tags"),
   collectionIds: z.array(z.string().uuid()),
 });
