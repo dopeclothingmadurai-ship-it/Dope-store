@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Menu, ShoppingBag, X } from "lucide-react";
+import { Menu, ShoppingBag, User, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -93,7 +93,14 @@ export function StoreHeader() {
             </span>
           </Link>
 
-          <div className="flex flex-1 items-center justify-end">
+          <div className="flex flex-1 items-center justify-end gap-1">
+            <Link
+              href="/account"
+              aria-label="Your account"
+              className="text-foreground/85 hover:text-foreground p-1 transition-colors"
+            >
+              <User className="size-5" strokeWidth={1.5} />
+            </Link>
             <button
               type="button"
               onClick={() => openCart(true)}
