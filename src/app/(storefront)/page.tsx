@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, BadgeCheck } from "lucide-react";
 
 import { Stars } from "@/features/reviews/components/star-rating";
+import { HomeCategories } from "@/features/storefront/components/home-categories";
 import { HomeHero } from "@/features/storefront/components/home-hero";
 import { ProductRail } from "@/features/storefront/components/product-rail";
 import {
@@ -13,6 +14,7 @@ import {
 import { SpotlightCard } from "@/features/storefront/components/spotlight-card";
 import {
   listCuratedFits,
+  listStoreCategories,
   listStoreProducts,
 } from "@/features/storefront/queries";
 import { listPublishedTestimonials } from "@/features/testimonials";
@@ -31,8 +33,9 @@ function initials(name: string): string {
 }
 
 export default async function HomePage() {
-  const [thisWeek, curated, testimonials] = await Promise.all([
+  const [thisWeek, categories, curated, testimonials] = await Promise.all([
     listStoreProducts(10),
+    listStoreCategories(),
     listCuratedFits(),
     listPublishedTestimonials(),
   ]);
@@ -73,7 +76,12 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* 3 · Curated Fits — manually flagged from the admin */}
+      {/* 3 · Shop by Category — reuses the category backend */}
+      {categories.length > 0 ? (
+        <HomeCategories categories={categories} />
+      ) : null}
+
+      {/* 4 · Curated Fits — manually flagged from the admin */}
       {curated.length > 0 ? (
         <section className="border-border border-t">
           <div className="mx-auto max-w-[1400px] px-5 py-24 sm:px-8 sm:py-28">
@@ -100,7 +108,7 @@ export default async function HomePage() {
         </section>
       ) : null}
 
-      {/* 4 · Testimonials — staff-curated, from the admin */}
+      {/* 5 · Testimonials — staff-curated, from the admin */}
       {testimonials.length > 0 ? (
         <section id="testimonials" className="border-border border-t">
           <div className="mx-auto max-w-[1400px] px-5 py-24 sm:px-8 sm:py-28">
