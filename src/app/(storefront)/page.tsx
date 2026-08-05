@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, Star } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
+import { Stars } from "@/features/reviews/components/star-rating";
 import { HomeHero } from "@/features/storefront/components/home-hero";
 import { ProductRail } from "@/features/storefront/components/product-rail";
 import { Reveal } from "@/features/storefront/components/reveal";
@@ -9,25 +10,8 @@ import {
   listHomepageTestimonials,
   listStoreProducts,
 } from "@/features/storefront/queries";
-import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
-
-function Stars({ rating }: { rating: number }) {
-  return (
-    <div className="flex gap-0.5" aria-label={`${rating} out of 5`}>
-      {Array.from({ length: 5 }).map((_, index) => (
-        <Star
-          key={index}
-          className={cn(
-            "size-3.5",
-            index < rating ? "fill-gold text-gold" : "text-muted-foreground/40",
-          )}
-        />
-      ))}
-    </div>
-  );
-}
 
 export default async function HomePage() {
   const [thisWeek, curated, testimonials] = await Promise.all([

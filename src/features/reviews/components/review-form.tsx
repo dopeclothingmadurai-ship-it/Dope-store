@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ImagePlus, Star, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -35,6 +35,19 @@ export function ReviewForm({
 
   const totalImages = keptUrls.length + newImages.length;
   const canAddImage = totalImages < MAX_REVIEW_IMAGES;
+
+  // Revoke any outstanding preview object URLs when the form unmounts, so we
+  // don't leak them if the customer navigates away without submitting.
+  const newImagesRef = useRef(newImages);
+  newImagesRef.current = newImages;
+  useEffect(
+    () => () => {
+      for (const image of newImagesRef.current) {
+        URL.revokeObjectURL(image.preview);
+      }
+    },
+    [],
+  );
 
   function onPickFiles(event: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
@@ -127,6 +140,7 @@ export function ReviewForm({
         onChange={(event) => setBody(event.target.value)}
         rows={4}
         maxLength={2000}
+        aria-label="Your review"
         placeholder="How does it fit? How's the quality?"
         className="border-input bg-secondary/60 text-foreground placeholder:text-muted-foreground/60 focus:border-gold/60 focus:ring-gold/30 mt-5 w-full resize-none border px-4 py-3 text-sm transition-colors outline-none focus:ring-1"
       />

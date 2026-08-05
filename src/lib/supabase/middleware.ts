@@ -61,10 +61,12 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (request.nextUrl.pathname.startsWith("/admin")) {
+  const { pathname } = request.nextUrl;
+
+  if (pathname.startsWith("/admin")) {
     if (!user) {
       return redirectWithCookies(request, supabaseResponse, "/login", {
-        next: request.nextUrl.pathname,
+        next: pathname,
       });
     }
     const { data: staff } = await supabase.rpc("is_staff");
@@ -72,6 +74,25 @@ export async function updateSession(request: NextRequest) {
       return redirectWithCookies(request, supabaseResponse, "/login", {
         error: "unauthorized",
       });
+    }
+  }
+
+  // Gate the customer account area (the sign-in/register pages stay public).
+  // The page-level getCustomer() guard remains as defense in depth, but this
+  // issues a real 307 before rendering rather than a soft client redirect.
+  if (
+    pathname === "/account" ||
+    (pathname.startsWith("/account/") &&
+      !pathname.startsWith("/account/sign-in") &&
+      !pathname.startsWith("/account/register"))
+  ) {
+    if (!user) {
+      return redirectWithCookies(
+        request,
+        supabaseResponse,
+        "/account/sign-in",
+        { next: pathname },
+      );
     }
   }
 

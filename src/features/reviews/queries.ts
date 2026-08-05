@@ -3,9 +3,15 @@ import "server-only";
 import { fromPostgrestError } from "@/lib/errors";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-import { type ProductReview, type ReviewSummary } from "./types";
+import {
+  type ProductReview,
+  type ReviewEligibility,
+  type ReviewSummary,
+} from "./types";
 
 type Db = ReturnType<typeof createAdminClient>;
+
+const REVIEW_COLUMNS = "id, author_name, rating, body, image_urls, created_at";
 
 function mapReview(row: {
   id: string;
@@ -32,7 +38,7 @@ export async function listProductReviews(
   const db = createAdminClient();
   const { data, error } = await db
     .from("reviews")
-    .select("id, author_name, rating, body, image_urls, created_at")
+    .select(REVIEW_COLUMNS)
     .eq("product_id", productId)
     .eq("status", "published")
     .order("created_at", { ascending: false });
@@ -40,22 +46,16 @@ export async function listProductReviews(
   return data.map(mapReview);
 }
 
-/** Count + average rating across a product's published reviews. */
-export async function getReviewSummary(
-  productId: string,
-): Promise<ReviewSummary> {
-  const db = createAdminClient();
-  const { data, error } = await db
-    .from("reviews")
-    .select("rating")
-    .eq("product_id", productId)
-    .eq("status", "published");
-  if (error) throw fromPostgrestError(error);
-  if (data.length === 0) return { count: 0, average: 0 };
-  const total = data.reduce((sum, row) => sum + row.rating, 0);
+/**
+ * Count + average across a set of already-fetched reviews. Pure — derived from
+ * the list the page already loads, so it costs no extra query.
+ */
+export function summarizeReviews(reviews: ProductReview[]): ReviewSummary {
+  if (reviews.length === 0) return { count: 0, average: 0 };
+  const total = reviews.reduce((sum, review) => sum + review.rating, 0);
   return {
-    count: data.length,
-    average: Math.round((total / data.length) * 10) / 10,
+    count: reviews.length,
+    average: Math.round((total / reviews.length) * 10) / 10,
   };
 }
 
@@ -73,19 +73,12 @@ async function resolveCustomerId(
   return data?.id ?? null;
 }
 
-/**
- * Whether a customer (by email) has an order containing the given product.
- * Orders are staff-RLS-only, so this runs through the service-role client
- * after the caller has been authenticated as the owning customer.
- */
-export async function hasPurchasedProduct(
-  email: string,
+/** Whether a resolved customer has an order containing the given product. */
+async function customerOwnsProduct(
+  db: Db,
+  customerId: string,
   productId: string,
 ): Promise<boolean> {
-  const db = createAdminClient();
-  const customerId = await resolveCustomerId(db, email);
-  if (!customerId) return false;
-
   const { data: orders, error: ordersError } = await db
     .from("orders")
     .select("id")
@@ -105,21 +98,51 @@ export async function hasPurchasedProduct(
   return (count ?? 0) > 0;
 }
 
-/** A customer's existing review for a product, if any. */
-export async function getCustomerReview(
+/**
+ * Whether a customer (by email) has purchased a product. Orders are
+ * staff-RLS-only, so this runs through the service-role client after the caller
+ * has been authenticated as the owning customer.
+ */
+export async function hasPurchasedProduct(
   email: string,
   productId: string,
-): Promise<ProductReview | null> {
+): Promise<boolean> {
   const db = createAdminClient();
   const customerId = await resolveCustomerId(db, email);
-  if (!customerId) return null;
+  if (!customerId) return false;
+  return customerOwnsProduct(db, customerId, productId);
+}
 
-  const { data, error } = await db
-    .from("reviews")
-    .select("id, author_name, rating, body, image_urls, created_at")
-    .eq("customer_id", customerId)
-    .eq("product_id", productId)
-    .maybeSingle();
-  if (error) throw fromPostgrestError(error);
-  return data ? mapReview(data) : null;
+/**
+ * Everything the product page needs to render the review controls for a
+ * signed-in customer: whether they purchased the product and their existing
+ * review (for edit mode). Resolves the customer once and runs the two lookups
+ * in parallel — no duplicate CRM query.
+ */
+export async function getReviewEligibility(
+  email: string,
+  productId: string,
+): Promise<ReviewEligibility> {
+  const db = createAdminClient();
+  const customerId = await resolveCustomerId(db, email);
+  if (!customerId) {
+    return { signedIn: true, hasPurchased: false, existing: null };
+  }
+
+  const [hasPurchased, existingRow] = await Promise.all([
+    customerOwnsProduct(db, customerId, productId),
+    db
+      .from("reviews")
+      .select(REVIEW_COLUMNS)
+      .eq("customer_id", customerId)
+      .eq("product_id", productId)
+      .maybeSingle(),
+  ]);
+  if (existingRow.error) throw fromPostgrestError(existingRow.error);
+
+  return {
+    signedIn: true,
+    hasPurchased,
+    existing: existingRow.data ? mapReview(existingRow.data) : null,
+  };
 }

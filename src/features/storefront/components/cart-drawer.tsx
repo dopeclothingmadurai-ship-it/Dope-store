@@ -16,15 +16,20 @@ export function CartDrawer() {
 
   useEffect(() => setMounted(true), []);
 
-  // Lock body scroll while the drawer is open.
+  // Lock body scroll and close on Escape while the drawer is open.
   useEffect(() => {
     if (!open) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
     return () => {
       document.body.style.overflow = previous;
+      window.removeEventListener("keydown", onKeyDown);
     };
-  }, [open]);
+  }, [open, setOpen]);
 
   const list = mounted ? items : [];
   const subtotal = cartSubtotal(list);
@@ -42,6 +47,9 @@ export function CartDrawer() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
           />
           <motion.aside
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cart-drawer-heading"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
@@ -49,7 +57,10 @@ export function CartDrawer() {
             className="bg-background border-border absolute inset-y-0 right-0 flex w-full max-w-md flex-col border-l"
           >
             <div className="border-border flex items-center justify-between border-b px-6 py-5">
-              <h2 className="text-sm font-medium tracking-[0.18em] uppercase">
+              <h2
+                id="cart-drawer-heading"
+                className="text-sm font-medium tracking-[0.18em] uppercase"
+              >
                 Your Bag
               </h2>
               <button

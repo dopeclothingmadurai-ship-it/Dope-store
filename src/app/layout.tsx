@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Geist, Geist_Mono } from "next/font/google";
+
+import { SITE_NAME, SITE_URL } from "@/lib/site";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -20,11 +23,20 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Dope Store",
-    template: "%s · Dope Store",
+    default: SITE_NAME,
+    template: `%s · ${SITE_NAME}`,
   },
   description: "Premium fashion, curated. Dope Store.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: "Premium fashion, curated. Dope Store.",
+    url: "/",
+  },
 };
 
 export default function RootLayout({

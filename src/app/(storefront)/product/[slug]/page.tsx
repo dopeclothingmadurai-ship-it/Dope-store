@@ -4,10 +4,9 @@ import { notFound } from "next/navigation";
 
 import {
   ProductReviews,
-  getCustomerReview,
-  getReviewSummary,
-  hasPurchasedProduct,
+  getReviewEligibility,
   listProductReviews,
+  summarizeReviews,
 } from "@/features/reviews";
 import { ProductCard } from "@/features/storefront/components/product-card";
 import { ProductDetail } from "@/features/storefront/components/product-detail";
@@ -17,6 +16,7 @@ import {
   listStoreProducts,
 } from "@/features/storefront/queries";
 import { getCustomer } from "@/lib/auth/customer";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -28,10 +28,22 @@ export async function generateMetadata({
   const { slug } = await params;
   const product = await getStoreProduct(slug);
   if (!product) return { title: "Not found" };
+
+  const description =
+    product.description?.slice(0, 150) ?? `${product.title} — ${SITE_NAME}.`;
+  const path = `/product/${product.slug}`;
+
   return {
     title: product.title,
-    description:
-      product.description?.slice(0, 150) ?? `${product.title} — Dope Store.`,
+    description,
+    alternates: { canonical: path },
+    openGraph: {
+      type: "website",
+      title: product.title,
+      description,
+      url: path,
+      images: product.images[0] ? [{ url: product.images[0] }] : undefined,
+    },
   };
 }
 
@@ -45,23 +57,64 @@ export default async function ProductPage({
   if (!product) notFound();
 
   const customer = await getCustomer();
-  const [others, reviews, summary, hasPurchased, existing] = await Promise.all([
+  const [others, reviews, eligibility] = await Promise.all([
     listStoreProducts(5).then((items) =>
       items.filter((item) => item.slug !== slug),
     ),
     listProductReviews(product.id),
-    getReviewSummary(product.id),
-    customer ? hasPurchasedProduct(customer.email, product.id) : Promise.resolve(false),
-    customer ? getCustomerReview(customer.email, product.id) : Promise.resolve(null),
+    customer
+      ? getReviewEligibility(customer.email, product.id)
+      : Promise.resolve({
+          signedIn: false,
+          hasPurchased: false,
+          existing: null,
+        }),
   ]);
+
+  const summary = summarizeReviews(reviews);
+
+  // Product structured data (JSON-LD) for search engines.
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.title,
+    description: product.description ?? undefined,
+    image: product.images,
+    brand: product.brand
+      ? { "@type": "Brand", name: product.brand }
+      : undefined,
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "INR",
+      price: (product.price / 100).toFixed(2),
+      availability: "https://schema.org/InStock",
+      url: `${SITE_URL}/product/${product.slug}`,
+    },
+    aggregateRating:
+      summary.count > 0
+        ? {
+            "@type": "AggregateRating",
+            ratingValue: summary.average,
+            reviewCount: summary.count,
+          }
+        : undefined,
+  };
 
   return (
     <div className="mx-auto max-w-[1400px] px-5 pt-24 pb-8 sm:px-8 sm:pt-32">
-      <nav className="text-muted-foreground mb-8 flex items-center gap-2 text-[12px] tracking-[0.14em] uppercase">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      <nav
+        aria-label="Breadcrumb"
+        className="text-muted-foreground mb-8 flex items-center gap-2 text-[12px] tracking-[0.14em] uppercase"
+      >
         <Link href="/shop" className="hover:text-foreground transition-colors">
           Shop
         </Link>
-        <span>/</span>
+        <span aria-hidden>/</span>
         <span className="text-foreground/70 truncate">{product.title}</span>
       </nav>
 
@@ -72,11 +125,7 @@ export default async function ProductPage({
         productSlug={product.slug}
         summary={summary}
         reviews={reviews}
-        eligibility={{
-          signedIn: customer !== null,
-          hasPurchased,
-          existing,
-        }}
+        eligibility={eligibility}
       />
 
       {others.length > 0 ? (
