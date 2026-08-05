@@ -17,7 +17,7 @@ import {
   listStoreCategories,
   listStoreProducts,
 } from "@/features/storefront/queries";
-import { listPublishedTestimonials } from "@/features/testimonials";
+import { listPublishedTestimonials } from "@/features/testimonials/queries";
 
 export const dynamic = "force-dynamic";
 

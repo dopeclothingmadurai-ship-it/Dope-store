@@ -39,6 +39,8 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      // Standalone Node data-seed utilities (CommonJS, run manually).
+      "scripts/**",
     ],
   },
 ];
