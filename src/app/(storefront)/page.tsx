@@ -4,7 +4,11 @@ import { ArrowRight } from "lucide-react";
 import { Stars } from "@/features/reviews/components/star-rating";
 import { HomeHero } from "@/features/storefront/components/home-hero";
 import { ProductRail } from "@/features/storefront/components/product-rail";
-import { Reveal } from "@/features/storefront/components/reveal";
+import {
+  Reveal,
+  RevealItem,
+  Stagger,
+} from "@/features/storefront/components/reveal";
 import {
   listCuratedFits,
   listHomepageTestimonials,
@@ -91,9 +95,9 @@ export default async function HomePage() {
                 What the crew says
               </h2>
             </Reveal>
-            <div className="grid gap-x-10 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
-              {testimonials.map((review, index) => (
-                <Reveal key={review.id} delay={(index % 3) * 0.08}>
+            <Stagger className="grid gap-x-10 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+              {testimonials.map((review) => (
+                <RevealItem key={review.id}>
                   <figure className="flex h-full flex-col">
                     <Stars rating={review.rating} />
                     <blockquote className="text-foreground/90 mt-5 flex-1 text-[15px] leading-relaxed">
@@ -103,9 +107,9 @@ export default async function HomePage() {
                       {review.authorName}
                     </figcaption>
                   </figure>
-                </Reveal>
+                </RevealItem>
               ))}
-            </div>
+            </Stagger>
           </div>
         </section>
       ) : null}

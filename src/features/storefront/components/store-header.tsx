@@ -12,7 +12,18 @@ import { cn } from "@/lib/utils";
 import { CartDrawer } from "./cart-drawer";
 import { cartCount, useCart } from "./use-cart";
 
-const NAV = [{ label: "Shop", href: "/shop" }];
+const NAV = [
+  { label: "Home", href: "/" },
+  { label: "Shop", href: "/shop" },
+];
+
+// Rotating promo line that scrolls above the nav and recedes on scroll.
+const ANNOUNCEMENTS = [
+  "Complimentary shipping over ₹2,000",
+  "Autumn — Winter 26",
+  "Crafted to last",
+  "Made in India",
+];
 
 export function StoreHeader() {
   const pathname = usePathname();
@@ -28,6 +39,8 @@ export function StoreHeader() {
   // The homepage has a full-bleed hero, so the bar starts transparent there.
   const overHero = pathname === "/";
 
+  // Passive scroll listener; setState no-ops when the boolean is unchanged, so
+  // this is cheap and never thrashes React between renders.
   useEffect(() => {
     function onScroll() {
       setScrolled(window.scrollY > 24);
@@ -45,104 +58,193 @@ export function StoreHeader() {
 
   return (
     <>
-      <header
-        className={cn(
-          "fixed inset-x-0 top-0 z-50 transition-colors duration-500",
-          solid
-            ? "bg-background/80 border-border border-b backdrop-blur-xl"
-            : "bg-transparent",
-        )}
-      >
-        <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-5 sm:h-20 sm:px-8">
-          <button
-            type="button"
-            className="text-foreground -ml-1 p-1 sm:hidden"
-            onClick={() => setMenuOpen((v) => !v)}
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-          >
-            {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
-          </button>
-
-          <nav className="hidden flex-1 items-center gap-8 sm:flex">
-            {NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="text-foreground/75 hover:text-foreground text-[13px] font-medium tracking-[0.14em] uppercase transition-colors"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
-          <Link
-            href="/"
-            aria-label="Dope Store home"
-            className="absolute left-1/2 flex -translate-x-1/2 items-center gap-2.5"
-          >
-            <Image
-              src="/dope-logo.png"
-              alt="Dope Store"
-              width={40}
-              height={40}
-              priority
-              className="size-8 sm:size-9"
-            />
-            <span className="font-display text-foreground text-xl leading-none font-medium tracking-[0.32em] sm:text-2xl">
-              DOPE
-            </span>
-          </Link>
-
-          <div className="flex flex-1 items-center justify-end gap-1">
-            <Link
-              href="/account"
-              aria-label="Your account"
-              className="text-foreground/85 hover:text-foreground p-1 transition-colors"
-            >
-              <User className="size-5" strokeWidth={1.5} />
-            </Link>
-            <button
-              type="button"
-              onClick={() => openCart(true)}
-              aria-label={`Open bag${count > 0 ? `, ${count} items` : ""}`}
-              className="text-foreground/85 hover:text-foreground relative -mr-1 p-1 transition-colors"
-            >
-              <ShoppingBag className="size-5" strokeWidth={1.5} />
-              {count > 0 ? (
-                <span className="bg-gold text-background absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full text-[10px] font-semibold tabular-nums">
-                  {count}
-                </span>
-              ) : null}
-            </button>
+      <header className="fixed inset-x-0 top-0 z-50">
+        {/* Announcement marquee — recedes as the page scrolls */}
+        <div
+          aria-hidden={scrolled}
+          className={cn(
+            "overflow-hidden transition-[height,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+            "border-gold/15 border-b bg-[#0c0c0d]/90 backdrop-blur-md",
+            scrolled ? "h-0 opacity-0" : "h-9 opacity-100",
+          )}
+        >
+          <div className="flex h-9 items-center overflow-hidden">
+            <Marquee />
           </div>
         </div>
 
-        {/* Mobile menu */}
-        <AnimatePresence>
-          {menuOpen ? (
-            <motion.nav
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-              className="border-border bg-background border-b px-5 pb-6 sm:hidden"
-            >
-              <div className="flex flex-col gap-1 pt-2">
+        {/* Navigation */}
+        <div
+          className={cn(
+            "transition-colors duration-500",
+            solid
+              ? "bg-background/75 border-border border-b backdrop-blur-xl"
+              : "bg-transparent",
+          )}
+        >
+          <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-5 sm:h-20 sm:px-8">
+            {/* Left: mobile toggle + desktop nav */}
+            <div className="flex flex-1 items-center">
+              <button
+                type="button"
+                className="text-foreground -ml-1 p-1 sm:hidden"
+                onClick={() => setMenuOpen((value) => !value)}
+                aria-label={menuOpen ? "Close menu" : "Open menu"}
+                aria-expanded={menuOpen}
+              >
+                {menuOpen ? (
+                  <X className="size-5" />
+                ) : (
+                  <Menu className="size-5" />
+                )}
+              </button>
+
+              <nav className="hidden items-center gap-9 sm:flex">
                 {NAV.map((item) => (
-                  <Link
+                  <NavLink
                     key={item.href}
                     href={item.href}
-                    className="text-foreground/80 hover:text-foreground py-3 text-sm font-medium tracking-[0.14em] uppercase transition-colors"
+                    active={pathname === item.href}
                   >
                     {item.label}
-                  </Link>
+                  </NavLink>
                 ))}
-              </div>
-            </motion.nav>
-          ) : null}
-        </AnimatePresence>
+              </nav>
+            </div>
+
+            {/* Center: logo */}
+            <Link
+              href="/"
+              aria-label="Dope Store home"
+              className="group absolute left-1/2 flex -translate-x-1/2 items-center gap-2.5"
+            >
+              <Image
+                src="/dope-logo.png"
+                alt="Dope Store"
+                width={40}
+                height={40}
+                priority
+                className="size-8 transition-transform duration-500 group-hover:scale-105 sm:size-9"
+              />
+              <span className="font-display text-foreground text-xl leading-none font-medium tracking-[0.32em] sm:text-2xl">
+                DOPE
+              </span>
+            </Link>
+
+            {/* Right: account + cart */}
+            <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">
+              <Link
+                href="/account"
+                aria-label="Your account"
+                className="text-foreground/85 hover:text-foreground p-1 transition-colors"
+              >
+                <User className="size-5" strokeWidth={1.5} />
+              </Link>
+              <button
+                type="button"
+                onClick={() => openCart(true)}
+                aria-label={`Open bag${count > 0 ? `, ${count} items` : ""}`}
+                className="text-foreground/85 hover:text-foreground relative p-1 transition-colors"
+              >
+                <ShoppingBag className="size-5" strokeWidth={1.5} />
+                {count > 0 ? (
+                  <span className="bg-gold text-background absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full text-[10px] font-semibold tabular-nums">
+                    {count}
+                  </span>
+                ) : null}
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile menu */}
+          <AnimatePresence>
+            {menuOpen ? (
+              <motion.nav
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                className="border-border bg-background/95 border-b px-5 pb-6 backdrop-blur-xl sm:hidden"
+              >
+                <div className="flex flex-col pt-2">
+                  {NAV.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="text-foreground/80 hover:text-foreground border-border/60 border-b py-4 text-sm font-medium tracking-[0.16em] uppercase transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                  <Link
+                    href="/account"
+                    className="text-foreground/80 hover:text-foreground py-4 text-sm font-medium tracking-[0.16em] uppercase transition-colors"
+                  >
+                    Account
+                  </Link>
+                </div>
+              </motion.nav>
+            ) : null}
+          </AnimatePresence>
+        </div>
       </header>
       <CartDrawer />
     </>
+  );
+}
+
+/** Desktop nav link with an elegant gold underline that wipes in on hover. */
+function NavLink({
+  href,
+  active,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "group relative text-[13px] font-medium tracking-[0.16em] uppercase transition-colors",
+        active ? "text-foreground" : "text-foreground/70 hover:text-foreground",
+      )}
+    >
+      {children}
+      <span
+        className={cn(
+          "bg-gold absolute -bottom-1.5 left-0 h-px origin-left transition-transform duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+          active
+            ? "w-full scale-x-100"
+            : "w-full scale-x-0 group-hover:scale-x-100",
+        )}
+      />
+    </Link>
+  );
+}
+
+/** Seamless two-track marquee of promo lines (paused for reduced motion). */
+function Marquee() {
+  return (
+    <div className="flex w-full overflow-hidden select-none">
+      {[0, 1].map((track) => (
+        <div
+          key={track}
+          aria-hidden={track === 1}
+          className="dope-marquee flex shrink-0 items-center gap-8 pr-8"
+        >
+          {ANNOUNCEMENTS.map((message) => (
+            <span
+              key={message}
+              className="text-gold/80 flex items-center gap-8 text-[10px] font-medium tracking-[0.28em] whitespace-nowrap uppercase"
+            >
+              {message}
+              <span className="bg-gold/40 size-1 rounded-full" />
+            </span>
+          ))}
+        </div>
+      ))}
+    </div>
   );
 }

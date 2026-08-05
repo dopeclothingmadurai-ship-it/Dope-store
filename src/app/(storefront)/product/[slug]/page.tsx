@@ -10,7 +10,11 @@ import {
 } from "@/features/reviews";
 import { ProductCard } from "@/features/storefront/components/product-card";
 import { ProductDetail } from "@/features/storefront/components/product-detail";
-import { Reveal } from "@/features/storefront/components/reveal";
+import {
+  Reveal,
+  RevealItem,
+  Stagger,
+} from "@/features/storefront/components/reveal";
 import {
   getStoreProduct,
   listStoreProducts,
@@ -101,7 +105,7 @@ export default async function ProductPage({
   };
 
   return (
-    <div className="mx-auto max-w-[1400px] px-5 pt-24 pb-8 sm:px-8 sm:pt-32">
+    <div className="mx-auto max-w-[1400px] px-5 pt-28 pb-8 sm:px-8 sm:pt-32">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -135,13 +139,13 @@ export default async function ProductPage({
               You may also like
             </h2>
           </Reveal>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-12 sm:gap-x-6 lg:grid-cols-4">
-            {others.slice(0, 4).map((item, index) => (
-              <Reveal key={item.id} delay={(index % 4) * 0.06}>
+          <Stagger className="grid grid-cols-2 gap-x-4 gap-y-12 sm:gap-x-6 lg:grid-cols-4">
+            {others.slice(0, 4).map((item) => (
+              <RevealItem key={item.id}>
                 <ProductCard product={item} />
-              </Reveal>
+              </RevealItem>
             ))}
-          </div>
+          </Stagger>
         </section>
       ) : null}
     </div>

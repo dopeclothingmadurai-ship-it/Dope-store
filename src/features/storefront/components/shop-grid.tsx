@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 
 import { ProductCard } from "./product-card";
-import { Reveal } from "./reveal";
+import { RevealItem, Stagger } from "./reveal";
 import { type StoreProductCard } from "../types";
 
 type Sort = "new" | "price-asc" | "price-desc";
@@ -62,13 +62,17 @@ export function ShopGrid({ products }: { products: StoreProductCard[] }) {
           Nothing here yet — check back soon.
         </p>
       ) : (
-        <div className="grid grid-cols-2 gap-x-4 gap-y-12 sm:gap-x-6 lg:grid-cols-4">
+        <Stagger
+          key={sort}
+          gap={0.06}
+          className="grid grid-cols-2 gap-x-4 gap-y-12 sm:gap-x-6 lg:grid-cols-4"
+        >
           {sorted.map((product, index) => (
-            <Reveal key={product.id} delay={(index % 4) * 0.05}>
+            <RevealItem key={product.id}>
               <ProductCard product={product} priority={index < 4} />
-            </Reveal>
+            </RevealItem>
           ))}
-        </div>
+        </Stagger>
       )}
     </div>
   );
