@@ -2,12 +2,14 @@
 
 import {
   motion,
+  useMotionValue,
   useReducedMotion,
   useScroll,
+  useSpring,
   useTransform,
 } from "framer-motion";
 import Image from "next/image";
-import { useRef } from "react";
+import { type MouseEvent, useRef } from "react";
 import { ArrowRight } from "lucide-react";
 
 import { EASE_LUXE } from "./reveal";
@@ -21,34 +23,60 @@ export function HomeHero() {
     target: ref,
     offset: ["start start", "end start"],
   });
-  // Gentle parallax: the image drifts up and fades as the hero leaves.
+  // Scroll parallax: the image drifts up and the wash deepens as the hero exits.
   const imageY = useTransform(scrollYProgress, [0, 1], ["0%", "16%"]);
   const overlayOpacity = useTransform(scrollYProgress, [0, 1], [0.5, 0.85]);
+
+  // Mouse depth: the image leans toward the cursor, the copy drifts against it.
+  const mvX = useMotionValue(0);
+  const mvY = useMotionValue(0);
+  const imgX = useSpring(mvX, { stiffness: 70, damping: 20, mass: 0.6 });
+  const imgY = useSpring(mvY, { stiffness: 70, damping: 20, mass: 0.6 });
+  const textX = useTransform(imgX, (value) => value * -0.45);
+  const textY = useTransform(imgY, (value) => value * -0.45);
+
+  function onMouseMove(event: MouseEvent<HTMLElement>) {
+    if (reduce || !ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    mvX.set(((event.clientX - rect.left) / rect.width - 0.5) * 26);
+    mvY.set(((event.clientY - rect.top) / rect.height - 0.5) * 26);
+  }
+  function onMouseLeave() {
+    mvX.set(0);
+    mvY.set(0);
+  }
 
   return (
     <section
       ref={ref}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
       className="relative h-[100svh] min-h-[640px] overflow-hidden"
     >
-      {/* Editorial image — parallax drift + a slow cinematic zoom on entrance */}
+      {/* Editorial image — scroll drift + mouse depth + slow entrance zoom */}
       <motion.div
         style={reduce ? undefined : { y: imageY }}
         className="absolute inset-0"
       >
         <motion.div
-          initial={reduce ? false : { scale: 1.18 }}
-          animate={{ scale: 1.04 }}
-          transition={{ duration: 1.9, ease: EASE_LUXE }}
-          className="absolute inset-0"
+          style={reduce ? undefined : { x: imgX, y: imgY }}
+          className="absolute inset-0 scale-[1.08]"
         >
-          <Image
-            src="/editorial/inside-1.jpg"
-            alt="Dope Store — editorial"
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover object-[70%_center] brightness-90 contrast-105 grayscale"
-          />
+          <motion.div
+            initial={reduce ? false : { scale: 1.16 }}
+            animate={{ scale: 1.03 }}
+            transition={{ duration: 1.9, ease: EASE_LUXE }}
+            className="absolute inset-0"
+          >
+            <Image
+              src="/editorial/inside-1.jpg"
+              alt="Dope Store — editorial"
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover object-[70%_center] brightness-90 contrast-105 grayscale"
+            />
+          </motion.div>
         </motion.div>
       </motion.div>
 
@@ -60,8 +88,10 @@ export function HomeHero() {
       <div className="from-background absolute inset-0 bg-gradient-to-t via-transparent to-transparent" />
 
       {/* Content */}
-      <div className="relative mx-auto flex h-full max-w-[1400px] flex-col justify-end px-5 pb-24 sm:px-8 sm:pb-28 lg:pb-32">
-        {/* Thin gold rule that draws in for hierarchy */}
+      <motion.div
+        style={reduce ? undefined : { x: textX, y: textY }}
+        className="relative mx-auto flex h-full max-w-[1400px] flex-col justify-end px-5 pb-24 sm:px-8 sm:pb-28 lg:pb-32"
+      >
         <motion.div
           initial={reduce ? false : { scaleX: 0 }}
           animate={{ scaleX: 1 }}
@@ -69,13 +99,18 @@ export function HomeHero() {
           className="via-gold/70 mb-7 h-px w-24 origin-left bg-gradient-to-r from-transparent to-transparent"
         />
 
-        <h1 className="font-display max-w-5xl text-[13vw] leading-[0.92] font-semibold tracking-tight text-white sm:text-7xl lg:text-[6.75rem] lg:leading-[0.9]">
-          <BlurText
-            text="It's all about fashion broh"
-            delay={0.25}
-            stagger={0.13}
-          />
-        </h1>
+        <motion.div
+          animate={reduce ? undefined : { y: [0, -6, 0] }}
+          transition={{ duration: 8, ease: "easeInOut", repeat: Infinity }}
+        >
+          <h1 className="font-editorial max-w-5xl text-[13.5vw] leading-[0.94] font-semibold tracking-[-0.01em] text-white sm:text-7xl lg:text-[6.75rem] lg:leading-[0.92]">
+            <BlurText
+              text="It's all about fashion broh"
+              delay={0.25}
+              stagger={0.13}
+            />
+          </h1>
+        </motion.div>
 
         <motion.div
           initial={reduce ? false : { opacity: 0, y: 20 }}
@@ -91,7 +126,7 @@ export function HomeHero() {
             Explore Collection
           </SpecularButton>
         </motion.div>
-      </div>
+      </motion.div>
     </section>
   );
 }

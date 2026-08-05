@@ -1,19 +1,20 @@
 "use client";
 
+import { motion, useMotionValue, useSpring } from "framer-motion";
 import Link from "next/link";
-import { type PointerEvent, type ReactNode, useCallback } from "react";
+import { type PointerEvent, type ReactNode, useRef } from "react";
 
 import { cn } from "@/lib/utils";
 
 /**
- * SpecularButton — an Apple-grade CTA. A soft specular highlight tracks the
- * cursor, a glass sheen sweeps across on hover, and the surface lifts with a
- * layered shadow. Two finishes: `light` (ivory glass) and `gold` (reflective
- * outline). Cursor tracking writes CSS custom properties directly — no React
- * state per move, so there is zero re-render cost.
+ * SpecularButton — an Apple-grade CTA. The whole control is magnetically drawn
+ * toward the cursor (spring-smoothed), a specular highlight tracks the pointer,
+ * a warm-gold glass sheen sweeps across on hover, and the surface lifts with a
+ * layered shadow + soft glow. Two finishes: `light` (ivory → warm gold reveal)
+ * and `gold` (reflective outline). Pointer tracking writes CSS custom
+ * properties directly and drives motion values — no React state per move.
  *
- * Styling lives in globals.css under `.specular-btn` so the effect is shared
- * and tunable in one place.
+ * Styling lives in globals.css under `.specular-btn`.
  */
 type SpecularButtonProps = {
   children: ReactNode;
@@ -32,18 +33,34 @@ export function SpecularButton({
   className,
   "aria-label": ariaLabel,
 }: SpecularButtonProps) {
-  const onPointerMove = useCallback((event: PointerEvent<HTMLElement>) => {
-    const el = event.currentTarget;
-    const rect = el.getBoundingClientRect();
-    el.style.setProperty(
+  const innerRef = useRef<HTMLElement | null>(null);
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const x = useSpring(mx, { stiffness: 220, damping: 18, mass: 0.5 });
+  const y = useSpring(my, { stiffness: 220, damping: 18, mass: 0.5 });
+
+  function onPointerMove(event: PointerEvent<HTMLDivElement>) {
+    if (event.pointerType === "touch") return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const relX = event.clientX - rect.left;
+    const relY = event.clientY - rect.top;
+    // Specular highlight position for the inner surface.
+    innerRef.current?.style.setProperty(
       "--mx",
-      `${((event.clientX - rect.left) / rect.width) * 100}%`,
+      `${(relX / rect.width) * 100}%`,
     );
-    el.style.setProperty(
+    innerRef.current?.style.setProperty(
       "--my",
-      `${((event.clientY - rect.top) / rect.height) * 100}%`,
+      `${(relY / rect.height) * 100}%`,
     );
-  }, []);
+    // Magnetic pull toward the cursor (subtle, capped by the multipliers).
+    mx.set((relX - rect.width / 2) * 0.18);
+    my.set((relY - rect.height / 2) * 0.3);
+  }
+  function reset() {
+    mx.set(0);
+    my.set(0);
+  }
 
   const classes = cn(
     "specular-btn",
@@ -54,33 +71,43 @@ export function SpecularButton({
   const inner = (
     <>
       <span className="specular-btn__glow" aria-hidden />
+      <span className="specular-btn__reveal" aria-hidden />
       <span className="specular-btn__sweep" aria-hidden />
       <span className="specular-btn__label">{children}</span>
     </>
   );
 
-  if (href) {
-    return (
-      <Link
-        href={href}
-        className={classes}
-        onPointerMove={onPointerMove}
-        aria-label={ariaLabel}
-      >
-        {inner}
-      </Link>
-    );
-  }
-
   return (
-    <button
-      type="button"
-      className={classes}
+    <motion.div
+      className="inline-flex"
+      style={{ x, y }}
       onPointerMove={onPointerMove}
-      onClick={onClick}
-      aria-label={ariaLabel}
+      onPointerLeave={reset}
     >
-      {inner}
-    </button>
+      {href ? (
+        <Link
+          ref={(node) => {
+            innerRef.current = node;
+          }}
+          href={href}
+          className={classes}
+          aria-label={ariaLabel}
+        >
+          {inner}
+        </Link>
+      ) : (
+        <button
+          ref={(node) => {
+            innerRef.current = node;
+          }}
+          type="button"
+          className={classes}
+          onClick={onClick}
+          aria-label={ariaLabel}
+        >
+          {inner}
+        </button>
+      )}
+    </motion.div>
   );
 }

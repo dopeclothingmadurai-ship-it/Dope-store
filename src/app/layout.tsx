@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Geist, Geist_Mono } from "next/font/google";
+import {
+  Bodoni_Moda,
+  Cormorant_Garamond,
+  Geist,
+  Geist_Mono,
+} from "next/font/google";
 
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
@@ -20,6 +25,14 @@ const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600"],
+});
+
+// High-contrast fashion serif for the hero campaign line (Bodoni-inspired).
+const bodoni = Bodoni_Moda({
+  variable: "--font-bodoni",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
@@ -47,7 +60,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${cormorant.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${cormorant.variable} ${bodoni.variable} antialiased`}
       >
         {children}
       </body>

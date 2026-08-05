@@ -1,7 +1,6 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -124,21 +123,13 @@ export function StoreHeader() {
               </nav>
             </div>
 
-            {/* Center: logo */}
+            {/* Center: wordmark */}
             <Link
               href="/"
               aria-label="Dope Store home"
-              className="group absolute left-1/2 flex -translate-x-1/2 items-center gap-2.5"
+              className="group absolute left-1/2 -translate-x-1/2"
             >
-              <Image
-                src="/dope-logo.png"
-                alt="Dope Store"
-                width={40}
-                height={40}
-                priority
-                className="size-8 transition-transform duration-500 group-hover:scale-105 sm:size-9"
-              />
-              <span className="font-display text-foreground text-xl leading-none font-medium tracking-[0.32em] sm:text-2xl">
+              <span className="font-display text-foreground text-xl leading-none font-medium tracking-[0.38em] transition-[letter-spacing] duration-500 group-hover:tracking-[0.44em] sm:text-2xl">
                 DOPE
               </span>
             </Link>
