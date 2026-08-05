@@ -5,6 +5,7 @@ import { Stars } from "@/features/reviews/components/star-rating";
 import { HomeHero } from "@/features/storefront/components/home-hero";
 import { ProductRail } from "@/features/storefront/components/product-rail";
 import {
+  MaskReveal,
   Reveal,
   RevealItem,
   Stagger,
@@ -64,18 +65,22 @@ export default async function HomePage() {
       {curated.length > 0 ? (
         <section className="border-border border-t">
           <div className="mx-auto max-w-[1400px] px-5 py-24 sm:px-8 sm:py-28">
-            <Reveal className="mb-12 max-w-xl">
-              <p className="text-gold text-[11px] font-medium tracking-[0.3em] uppercase">
-                Styled by Dope
-              </p>
+            <div className="mb-12 max-w-xl">
+              <Reveal>
+                <p className="text-gold text-[11px] font-medium tracking-[0.3em] uppercase">
+                  Styled by Dope
+                </p>
+              </Reveal>
               <h2 className="font-display mt-3 text-3xl font-light tracking-tight sm:text-5xl">
-                Curated Fits
+                <MaskReveal delay={0.05}>Curated Fits</MaskReveal>
               </h2>
-              <p className="text-muted-foreground mt-4 text-sm leading-relaxed">
-                A tighter edit — the pieces we are wearing this season, chosen
-                by the studio.
-              </p>
-            </Reveal>
+              <Reveal delay={0.15}>
+                <p className="text-muted-foreground mt-4 text-sm leading-relaxed">
+                  A tighter edit — the pieces we are wearing this season, chosen
+                  by the studio.
+                </p>
+              </Reveal>
+            </div>
             <Reveal>
               <ProductRail products={curated} />
             </Reveal>
@@ -87,14 +92,16 @@ export default async function HomePage() {
       {testimonials.length > 0 ? (
         <section className="border-border border-t">
           <div className="mx-auto max-w-[1400px] px-5 py-24 sm:px-8 sm:py-28">
-            <Reveal className="mb-14 text-center">
-              <p className="text-gold text-[11px] font-medium tracking-[0.3em] uppercase">
-                Worn & Reviewed
-              </p>
+            <div className="mb-14 text-center">
+              <Reveal>
+                <p className="text-gold text-[11px] font-medium tracking-[0.3em] uppercase">
+                  Worn & Reviewed
+                </p>
+              </Reveal>
               <h2 className="font-display mt-3 text-3xl font-light tracking-tight sm:text-5xl">
-                What the crew says
+                <MaskReveal delay={0.05}>What the crew says</MaskReveal>
               </h2>
-            </Reveal>
+            </div>
             <Stagger className="grid gap-x-10 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
               {testimonials.map((review) => (
                 <RevealItem key={review.id}>

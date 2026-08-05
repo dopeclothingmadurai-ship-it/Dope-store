@@ -4,6 +4,7 @@ import { fromPostgrestError } from "@/lib/errors";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 import {
+  type StoreCategory,
   type StoreProductCard,
   type StoreProductDetail,
   type StoreReview,
@@ -78,21 +79,100 @@ async function toCards(
   });
 }
 
-/** Active products as storefront cards, newest first ("This Week at Dope"). */
+/**
+ * Active products as storefront cards, newest first ("This Week at Dope").
+ * Optionally scoped to a single category (for the category-filtered shop).
+ */
 export async function listStoreProducts(
   limit?: number,
+  categoryId?: string,
 ): Promise<StoreProductCard[]> {
   const db = createAdminClient();
-  let query = db
-    .from("products")
-    .select(CARD_COLUMNS)
-    .eq("status", "active")
-    .order("created_at", { ascending: false });
+  let query = db.from("products").select(CARD_COLUMNS).eq("status", "active");
+  if (categoryId) query = query.eq("category_id", categoryId);
+  query = query.order("created_at", { ascending: false });
   if (limit) query = query.limit(limit);
 
   const { data: products, error } = await query;
   if (error) throw fromPostgrestError(error);
   return toCards(db, products);
+}
+
+/** A single active (non-archived) category by slug, or null. */
+export async function getStoreCategory(
+  slug: string,
+): Promise<{ id: string; name: string; slug: string } | null> {
+  const db = createAdminClient();
+  const { data, error } = await db
+    .from("categories")
+    .select("id, name, slug")
+    .eq("slug", slug)
+    .is("archived_at", null)
+    .maybeSingle();
+  if (error) throw fromPostgrestError(error);
+  return data;
+}
+
+/**
+ * Storefront categories with a live product count and a representative image
+ * (the category's own image if set, else the newest product's primary image).
+ */
+export async function listStoreCategories(): Promise<StoreCategory[]> {
+  const db = createAdminClient();
+  const { data: cats, error } = await db
+    .from("categories")
+    .select("id, name, slug, image_url")
+    .is("archived_at", null)
+    .order("position", { ascending: true })
+    .order("name", { ascending: true });
+  if (error) throw fromPostgrestError(error);
+
+  const { data: products, error: productsError } = await db
+    .from("products")
+    .select("id, category_id")
+    .eq("status", "active")
+    .not("category_id", "is", null)
+    .order("created_at", { ascending: false });
+  if (productsError) throw fromPostgrestError(productsError);
+
+  const countByCategory = new Map<string, number>();
+  const repProductByCategory = new Map<string, string>();
+  for (const product of products) {
+    if (!product.category_id) continue;
+    countByCategory.set(
+      product.category_id,
+      (countByCategory.get(product.category_id) ?? 0) + 1,
+    );
+    if (!repProductByCategory.has(product.category_id)) {
+      repProductByCategory.set(product.category_id, product.id);
+    }
+  }
+
+  const repIds = [...repProductByCategory.values()];
+  const imageByProduct = new Map<string, string>();
+  if (repIds.length > 0) {
+    const { data: media, error: mediaError } = await db
+      .from("product_media")
+      .select("product_id, url, is_primary, position")
+      .in("product_id", repIds);
+    if (mediaError) throw fromPostgrestError(mediaError);
+    for (const [productId, urls] of buildMediaMap(media)) {
+      if (urls[0]) imageByProduct.set(productId, urls[0]);
+    }
+  }
+
+  return cats.map((category) => {
+    const repProduct = repProductByCategory.get(category.id);
+    return {
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      productCount: countByCategory.get(category.id) ?? 0,
+      imageUrl:
+        category.image_url ??
+        (repProduct ? (imageByProduct.get(repProduct) ?? null) : null),
+    };
+  });
 }
 
 /** Products flagged "Show in Curated Fits" from the admin, newest first. */

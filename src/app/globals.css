@@ -308,6 +308,152 @@ body:has(.storefront) {
   animation: dope-marquee 24s linear infinite;
 }
 
+/* A soft light beam that drifts across the announcement bar — the premium
+ * moving highlight above the navigation. */
+@keyframes dope-lightsweep {
+  0% {
+    transform: translateX(-40%);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(140%);
+    opacity: 0;
+  }
+}
+.dope-lightsweep {
+  animation: dope-lightsweep 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform, opacity;
+}
+
+/* ── SpecularButton — Apple-grade CTA with cursor-tracked specular light ── */
+.specular-btn {
+  --mx: 50%;
+  --my: 50%;
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 3.25rem;
+  padding: 0 2.2rem;
+  overflow: hidden;
+  border-radius: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.5s ease;
+  will-change: transform;
+}
+.specular-btn:hover {
+  transform: translateY(-2px);
+}
+.specular-btn:active {
+  transform: translateY(0);
+  transition-duration: 0.12s;
+}
+.specular-btn:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+.specular-btn__label {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.specular-btn__glow,
+.specular-btn__sweep {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+.specular-btn__glow {
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+.specular-btn:hover .specular-btn__glow {
+  opacity: 1;
+}
+.specular-btn__sweep {
+  transform: translateX(-130%) skewX(-18deg);
+}
+.specular-btn:hover .specular-btn__sweep {
+  animation: specular-sweep 0.95s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes specular-sweep {
+  to {
+    transform: translateX(130%) skewX(-18deg);
+  }
+}
+.specular-btn--light {
+  background: linear-gradient(180deg, #ffffff 0%, #ece9e4 100%);
+  color: #0a0a0b;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.8) inset,
+    0 10px 30px -12px rgba(0, 0, 0, 0.55);
+}
+.specular-btn--light:hover {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 20px 45px -14px rgba(0, 0, 0, 0.65);
+}
+.specular-btn--light .specular-btn__glow {
+  background: radial-gradient(
+    120px circle at var(--mx) var(--my),
+    rgba(194, 164, 104, 0.35),
+    rgba(255, 255, 255, 0) 62%
+  );
+}
+.specular-btn--light .specular-btn__sweep {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.9),
+    transparent
+  );
+  mix-blend-mode: overlay;
+}
+.specular-btn--gold {
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--foreground);
+  border: 1px solid rgba(194, 164, 104, 0.45);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 10px 30px -16px rgba(0, 0, 0, 0.6);
+}
+.specular-btn--gold:hover {
+  border-color: rgba(216, 194, 153, 0.85);
+  box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.7);
+}
+.specular-btn--gold .specular-btn__glow {
+  background: radial-gradient(
+    150px circle at var(--mx) var(--my),
+    rgba(216, 194, 153, 0.3),
+    rgba(194, 164, 104, 0) 60%
+  );
+}
+.specular-btn--gold .specular-btn__sweep {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(216, 194, 153, 0.5),
+    transparent
+  );
+}
+
 @media (prefers-reduced-motion: reduce) {
   .storefront *,
   .storefront *::before,

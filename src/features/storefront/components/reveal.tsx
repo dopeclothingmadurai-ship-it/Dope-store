@@ -9,6 +9,8 @@ import {
 } from "framer-motion";
 import { type ReactNode, useRef } from "react";
 
+import { cn } from "@/lib/utils";
+
 /**
  * Shared luxury motion language for the storefront.
  *
@@ -129,5 +131,44 @@ export function RevealItem({
     <motion.div className={className} variants={variants} {...rest}>
       {children}
     </motion.div>
+  );
+}
+
+/**
+ * MaskReveal — a single line of type slides up from behind a mask, the way a
+ * fashion title resolves on a lookbook. Distinct from the fade/stagger reveals
+ * so sections don't all animate the same way. Best for one-line headings.
+ */
+export function MaskReveal({
+  children,
+  className,
+  delay = 0,
+}: {
+  children: ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  const reduce = useReducedMotion();
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, margin: VIEWPORT_MARGIN });
+  return (
+    <span
+      ref={ref}
+      className={cn(
+        "inline-block overflow-hidden pb-[0.12em] align-bottom",
+        className,
+      )}
+    >
+      <motion.span
+        className="inline-block"
+        initial={{ y: "115%" }}
+        animate={inView ? { y: 0 } : { y: "115%" }}
+        transition={
+          reduce ? { duration: 0 } : { duration: 0.95, ease: EASE_LUXE, delay }
+        }
+      >
+        {children}
+      </motion.span>
+    </span>
   );
 }

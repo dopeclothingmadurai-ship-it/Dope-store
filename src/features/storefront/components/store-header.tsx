@@ -15,7 +15,14 @@ import { cartCount, useCart } from "./use-cart";
 const NAV = [
   { label: "Home", href: "/" },
   { label: "Shop", href: "/shop" },
+  { label: "Categories", href: "/categories" },
 ];
+
+/** Active when the path is the link, or nested under it (except Home). */
+function isActive(pathname: string, href: string): boolean {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 // Rotating promo line that scrolls above the nav and recedes on scroll.
 const ANNOUNCEMENTS = [
@@ -68,7 +75,12 @@ export function StoreHeader() {
             scrolled ? "h-0 opacity-0" : "h-9 opacity-100",
           )}
         >
-          <div className="flex h-9 items-center overflow-hidden">
+          <div className="relative flex h-9 items-center overflow-hidden">
+            {/* Premium light beam drifting across the announcement */}
+            <span
+              aria-hidden
+              className="dope-lightsweep pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-[linear-gradient(90deg,transparent,rgba(216,194,153,0.16),transparent)] blur-md"
+            />
             <Marquee />
           </div>
         </div>
@@ -104,7 +116,7 @@ export function StoreHeader() {
                   <NavLink
                     key={item.href}
                     href={item.href}
-                    active={pathname === item.href}
+                    active={isActive(pathname, item.href)}
                   >
                     {item.label}
                   </NavLink>
@@ -136,17 +148,23 @@ export function StoreHeader() {
               <Link
                 href="/account"
                 aria-label="Your account"
-                className="text-foreground/85 hover:text-foreground p-1 transition-colors"
+                className="text-foreground/85 hover:text-foreground group p-1 transition-colors"
               >
-                <User className="size-5" strokeWidth={1.5} />
+                <User
+                  className="size-5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:scale-110"
+                  strokeWidth={1.5}
+                />
               </Link>
               <button
                 type="button"
                 onClick={() => openCart(true)}
                 aria-label={`Open bag${count > 0 ? `, ${count} items` : ""}`}
-                className="text-foreground/85 hover:text-foreground relative p-1 transition-colors"
+                className="text-foreground/85 hover:text-foreground group relative p-1 transition-colors"
               >
-                <ShoppingBag className="size-5" strokeWidth={1.5} />
+                <ShoppingBag
+                  className="size-5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:scale-110"
+                  strokeWidth={1.5}
+                />
                 {count > 0 ? (
                   <span className="bg-gold text-background absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full text-[10px] font-semibold tabular-nums">
                     {count}

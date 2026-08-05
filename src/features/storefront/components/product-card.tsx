@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ImageIcon } from "lucide-react";
+import { ArrowUpRight, ImageIcon } from "lucide-react";
 
 import { formatPaise } from "@/lib/money";
 import { cn } from "@/lib/utils";
@@ -18,8 +18,11 @@ export function ProductCard({
     product.compareAtPrice != null && product.compareAtPrice > product.price;
 
   return (
-    <Link href={`/product/${product.slug}`} className="group block">
-      <div className="bg-secondary relative aspect-[3/4] overflow-hidden">
+    <Link
+      href={`/product/${product.slug}`}
+      className="group block transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform hover:-translate-y-1"
+    >
+      <div className="bg-secondary relative aspect-[3/4] overflow-hidden transition-shadow duration-500 group-hover:shadow-[0_30px_60px_-24px_rgba(0,0,0,0.7)]">
         {product.imageUrl ? (
           <>
             <Image
@@ -30,9 +33,10 @@ export function ProductCard({
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               priority={priority}
               className={cn(
-                "object-cover transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                "group-hover:scale-[1.03]",
-                product.hoverImageUrl && "group-hover:opacity-0",
+                "object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+                "group-hover:scale-[1.06]",
+                product.hoverImageUrl &&
+                  "opacity-100 transition-[transform,opacity] group-hover:opacity-0",
               )}
             />
             {product.hoverImageUrl ? (
@@ -43,9 +47,18 @@ export function ProductCard({
                 fill
                 unoptimized
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                className="scale-[1.03] object-cover opacity-0 transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:opacity-100"
+                className="scale-[1.06] object-cover opacity-0 transition-opacity duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:opacity-100"
               />
             ) : null}
+
+            {/* Depth wash + reveal CTA on hover */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+            <div className="pointer-events-none absolute inset-x-4 bottom-4 flex translate-y-3 items-center justify-between opacity-0 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-0 group-hover:opacity-100">
+              <span className="text-[11px] font-medium tracking-[0.22em] text-white uppercase">
+                View
+              </span>
+              <ArrowUpRight className="size-4 text-white" strokeWidth={1.5} />
+            </div>
           </>
         ) : (
           <div className="text-muted-foreground/40 flex h-full w-full items-center justify-center">

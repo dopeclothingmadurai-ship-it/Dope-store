@@ -8,6 +8,14 @@ export type StoreProductCard = {
   hoverImageUrl: string | null;
 };
 
+export type StoreCategory = {
+  id: string;
+  name: string;
+  slug: string;
+  imageUrl: string | null;
+  productCount: number;
+};
+
 export type StoreVariant = {
   id: string;
   size: string | null;
