@@ -481,6 +481,57 @@ body:has(.storefront) {
   );
 }
 
+/* ── SpotlightCard — champagne spotlight follows the cursor, glass lift ── */
+.spotlight-card {
+  --sx: 50%;
+  --sy: 0%;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.55s ease;
+  will-change: transform;
+}
+.spotlight-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+  background: radial-gradient(
+    340px circle at var(--sx) var(--sy),
+    rgba(216, 194, 153, 0.16),
+    rgba(216, 194, 153, 0) 60%
+  );
+}
+/* Thin glass sheen along the top edge. */
+.spotlight-card::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 40%;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent);
+  opacity: 0.6;
+}
+.spotlight-card:hover::before {
+  opacity: 1;
+}
+.spotlight-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(216, 194, 153, 0.28);
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.75);
+}
+.spotlight-card > * {
+  position: relative;
+  z-index: 1;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .storefront *,
   .storefront *::before,

@@ -15,6 +15,7 @@ const NAV = [
   { label: "Home", href: "/" },
   { label: "Shop", href: "/shop" },
   { label: "Categories", href: "/categories" },
+  { label: "Testimonials", href: "/#testimonials" },
 ];
 
 /** Active when the path is the link, or nested under it (except Home). */

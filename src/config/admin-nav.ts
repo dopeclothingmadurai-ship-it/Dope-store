@@ -2,6 +2,7 @@ import {
   type LucideIcon,
   BarChart3,
   LayoutDashboard,
+  MessageSquareQuote,
   Package,
   Layers,
   FolderTree,
@@ -60,7 +61,14 @@ export const ADMIN_NAV: AdminNavGroup[] = [
   },
   {
     label: "Marketing",
-    items: [{ label: "Coupons", href: "/admin/coupons", icon: Ticket }],
+    items: [
+      { label: "Coupons", href: "/admin/coupons", icon: Ticket },
+      {
+        label: "Testimonials",
+        href: "/admin/testimonials",
+        icon: MessageSquareQuote,
+      },
+    ],
   },
   {
     label: "Point of Sale",
