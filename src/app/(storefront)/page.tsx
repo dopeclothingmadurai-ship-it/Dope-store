@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, BadgeCheck } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
-import { Stars } from "@/features/reviews/components/star-rating";
 import { HomeCategories } from "@/features/storefront/components/home-categories";
 import { HomeHero } from "@/features/storefront/components/home-hero";
 import { ProductRail } from "@/features/storefront/components/product-rail";
@@ -11,7 +10,7 @@ import {
   RevealItem,
   Stagger,
 } from "@/features/storefront/components/reveal";
-import { SpotlightCard } from "@/features/storefront/components/spotlight-card";
+import { TestimonialCard } from "@/features/storefront/components/testimonial-card";
 import {
   listCuratedFits,
   listStoreCategories,
@@ -20,17 +19,6 @@ import {
 import { listPublishedTestimonials } from "@/features/testimonials/queries";
 
 export const dynamic = "force-dynamic";
-
-/** First-letter initials for an avatar fallback. */
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
 
 export default async function HomePage() {
   const [thisWeek, categories, curated, testimonials] = await Promise.all([
@@ -125,35 +113,18 @@ export default async function HomePage() {
             <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {testimonials.map((testimonial) => (
                 <RevealItem key={testimonial.id} className="h-full">
-                  <SpotlightCard className="border-border bg-card flex h-full flex-col rounded-2xl border p-7">
-                    <div className="flex items-center gap-3.5">
-                      <span className="bg-secondary text-gold flex size-11 shrink-0 items-center justify-center rounded-full text-sm font-medium tracking-wide">
-                        {initials(testimonial.customerName)}
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-foreground flex items-center gap-1.5 text-sm font-medium">
-                          {testimonial.customerName}
-                          {testimonial.verifiedPurchase ? (
-                            <BadgeCheck className="text-gold size-4 shrink-0" />
-                          ) : null}
-                        </p>
-                        {testimonial.location ? (
-                          <p className="text-muted-foreground mt-0.5 truncate text-xs">
-                            {testimonial.location}
-                          </p>
-                        ) : null}
-                      </div>
-                    </div>
-                    <div className="mt-5">
-                      <Stars rating={testimonial.rating} />
-                    </div>
-                    <blockquote className="text-foreground/90 mt-4 flex-1 text-[15px] leading-relaxed">
-                      “{testimonial.review}”
-                    </blockquote>
-                  </SpotlightCard>
+                  <TestimonialCard testimonial={testimonial} />
                 </RevealItem>
               ))}
             </Stagger>
+            <Reveal className="mt-12 text-center">
+              <Link
+                href="/testimonials"
+                className="text-muted-foreground hover:text-foreground text-[12px] font-medium tracking-[0.16em] uppercase transition-colors"
+              >
+                Read all reviews
+              </Link>
+            </Reveal>
           </div>
         </section>
       ) : null}
