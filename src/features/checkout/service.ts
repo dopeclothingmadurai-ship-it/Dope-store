@@ -76,7 +76,9 @@ async function priceCart(
       (variant.inventory?.reserved_quantity ?? 0);
     if (item.quantity > available) {
       throw new InventoryError(
-        `Only ${available} left in stock for ${variant.products.title}.`,
+        available <= 0
+          ? `${variant.products.title} went out of stock while you were checking out.`
+          : `Only ${available} left in stock for ${variant.products.title}.`,
       );
     }
     const unitPrice = variant.price_override ?? variant.products.base_price;
