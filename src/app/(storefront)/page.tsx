@@ -1,8 +1,14 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
+import { CampaignBanner } from "@/features/storefront/components/campaign-banner";
+import {
+  EditorialSplit,
+  type SplitRow,
+} from "@/features/storefront/components/editorial-split";
 import { HomeCategories } from "@/features/storefront/components/home-categories";
 import { HomeHero } from "@/features/storefront/components/home-hero";
+import { LifestyleGrid } from "@/features/storefront/components/lifestyle-grid";
 import { ProductRail } from "@/features/storefront/components/product-rail";
 import {
   MaskReveal,
@@ -10,6 +16,7 @@ import {
   RevealItem,
   Stagger,
 } from "@/features/storefront/components/reveal";
+import { StorySection } from "@/features/storefront/components/story-section";
 import { TestimonialCard } from "@/features/storefront/components/testimonial-card";
 import {
   listCuratedFits,
@@ -19,6 +26,26 @@ import {
 import { listPublishedTestimonials } from "@/features/testimonials/queries";
 
 export const dynamic = "force-dynamic";
+
+/** Editorial split rows — campaign copy over cinematic photography. */
+const SPLIT_ROWS: SplitRow[] = [
+  {
+    image: "/editorial/editorial-street.jpg",
+    eyebrow: "The Everyday",
+    title: "Made for the way you actually live",
+    body: "Heavyweight cotton, considered cuts, and finishes that only get better with wear. Pieces built to be lived in — not saved for later.",
+    href: "/shop",
+    cta: "Shop the edit",
+  },
+  {
+    image: "/editorial/editorial-pose.jpg",
+    eyebrow: "The Attitude",
+    title: "Quiet confidence, worn loud",
+    body: "Silhouettes that move with you and hold their shape. Understated by design, unmistakable in person.",
+    href: "/categories",
+    cta: "Explore categories",
+  },
+];
 
 export default async function HomePage() {
   const [thisWeek, categories, curated, testimonials] = await Promise.all([
@@ -33,7 +60,10 @@ export default async function HomePage() {
       {/* 1 · Hero */}
       <HomeHero />
 
-      {/* 2 · This Week at Dope — automatic, newest first */}
+      {/* 2 · Luxury story — editorial manifesto */}
+      <StorySection />
+
+      {/* 3 · This Week at Dope — automatic, newest first */}
       <section className="mx-auto max-w-[1400px] px-5 py-24 sm:px-8 sm:py-28">
         <Reveal className="mb-12 flex items-end justify-between gap-6">
           <div>
@@ -64,12 +94,15 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* 3 · Shop by Category — reuses the category backend */}
+      {/* 4 · Shop by Category — reuses the category backend */}
       {categories.length > 0 ? (
         <HomeCategories categories={categories} />
       ) : null}
 
-      {/* 4 · Curated Fits — manually flagged from the admin */}
+      {/* 5 · Editorial split — campaign spread */}
+      <EditorialSplit rows={SPLIT_ROWS} />
+
+      {/* 6 · Curated Fits — manually flagged from the admin */}
       {curated.length > 0 ? (
         <section className="border-border border-t">
           <div className="mx-auto max-w-[1400px] px-5 py-24 sm:px-8 sm:py-28">
@@ -96,7 +129,13 @@ export default async function HomePage() {
         </section>
       ) : null}
 
-      {/* 5 · Testimonials — staff-curated, from the admin */}
+      {/* 7 · Campaign banner — full-bleed season statement */}
+      <CampaignBanner />
+
+      {/* 8 · Lifestyle campaign — editorial photo grid */}
+      <LifestyleGrid />
+
+      {/* 9 · Testimonials — staff-curated, from the admin */}
       {testimonials.length > 0 ? (
         <section id="testimonials" className="border-border border-t">
           <div className="mx-auto max-w-[1400px] px-5 py-24 sm:px-8 sm:py-28">
