@@ -80,11 +80,14 @@ export async function updateSession(request: NextRequest) {
   // Gate the customer account area (the sign-in/register pages stay public).
   // The page-level getCustomer() guard remains as defense in depth, but this
   // issues a real 307 before rendering rather than a soft client redirect.
+  const isPublicAccountRoute =
+    pathname.startsWith("/account/sign-in") ||
+    pathname.startsWith("/account/register") ||
+    pathname.startsWith("/account/forgot-password") ||
+    pathname.startsWith("/account/reset-password");
   if (
     pathname === "/account" ||
-    (pathname.startsWith("/account/") &&
-      !pathname.startsWith("/account/sign-in") &&
-      !pathname.startsWith("/account/register"))
+    (pathname.startsWith("/account/") && !isPublicAccountRoute)
   ) {
     if (!user) {
       return redirectWithCookies(

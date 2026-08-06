@@ -132,6 +132,15 @@ export function AuthPanel({ mode, next }: { mode: Mode; next: string | null }) {
           />
         </Field>
 
+        {!isRegister ? (
+          <Link
+            href="/account/forgot-password"
+            className="text-muted-foreground hover:text-foreground -mt-2 w-fit text-xs transition-colors"
+          >
+            Forgot password?
+          </Link>
+        ) : null}
+
         <button
           type="submit"
           disabled={isSubmitting}

@@ -2,9 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { z } from "zod";
 
 import { AppError, AuthError, ConflictError, runAction } from "@/lib/errors";
 import { type Result } from "@/lib/result";
+import { SITE_URL } from "@/lib/site";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -89,6 +91,51 @@ export async function signInCustomerAction(
       );
     }
 
+    revalidatePath("/", "layout");
+    return null;
+  });
+}
+
+/**
+ * Send a password-reset email (Supabase). Always returns success so we never
+ * reveal whether an email is registered. The link lands on /auth/callback,
+ * which establishes a recovery session and forwards to /account/reset-password.
+ */
+export async function requestPasswordResetAction(
+  input: unknown,
+): Promise<Result<null>> {
+  return runAction(async () => {
+    const { email } = z
+      .object({ email: z.string().trim().email("Enter a valid email") })
+      .parse(input);
+    const supabase = await createClient();
+    await supabase.auth.resetPasswordForEmail(email.toLowerCase(), {
+      redirectTo: `${SITE_URL}/auth/callback?next=/account/reset-password`,
+    });
+    return null;
+  });
+}
+
+/** Set a new password within an active recovery session. */
+export async function resetPasswordAction(
+  input: unknown,
+): Promise<Result<null>> {
+  return runAction(async () => {
+    const { password } = z
+      .object({
+        password: z
+          .string()
+          .min(8, "Use at least 8 characters")
+          .max(72, "Use at most 72 characters"),
+      })
+      .parse(input);
+    const supabase = await createClient();
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) {
+      throw new AuthError(
+        "Your reset link has expired. Please request a new one.",
+      );
+    }
     revalidatePath("/", "layout");
     return null;
   });
