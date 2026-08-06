@@ -472,11 +472,13 @@ export type Database = {
           customer_phone: string | null
           discount_total: number
           fulfillment_status: Database["public"]["Enums"]["fulfillment_status"]
+          fulfillment_type: string
           grand_total: number
           id: string
           order_number: string
           payment_method: string | null
           payment_status: Database["public"]["Enums"]["payment_status"]
+          pickup_status: string | null
           placed_at: string
           shipping_address: Json | null
           shipping_total: number
@@ -500,11 +502,13 @@ export type Database = {
           customer_phone?: string | null
           discount_total?: number
           fulfillment_status?: Database["public"]["Enums"]["fulfillment_status"]
+          fulfillment_type?: string
           grand_total?: number
           id?: string
           order_number?: string
           payment_method?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
+          pickup_status?: string | null
           placed_at?: string
           shipping_address?: Json | null
           shipping_total?: number
@@ -528,11 +532,13 @@ export type Database = {
           customer_phone?: string | null
           discount_total?: number
           fulfillment_status?: Database["public"]["Enums"]["fulfillment_status"]
+          fulfillment_type?: string
           grand_total?: number
           id?: string
           order_number?: string
           payment_method?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
+          pickup_status?: string | null
           placed_at?: string
           shipping_address?: Json | null
           shipping_total?: number

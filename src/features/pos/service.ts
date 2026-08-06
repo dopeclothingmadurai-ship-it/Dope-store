@@ -1,6 +1,7 @@
 import "server-only";
 
 import { validateCoupon } from "@/features/coupons/service";
+import { sendOrderConfirmationEmail } from "@/features/orders/emails";
 import { getOrderDetail } from "@/features/orders/queries";
 import { type OrderDetail } from "@/features/orders/types";
 import {
@@ -121,5 +122,13 @@ export async function createPosOrder(
   if (!detail) {
     throw new ValidationError("The order could not be created.");
   }
+
+  // Fire the single automated email. Never let an email problem fail the order.
+  try {
+    await sendOrderConfirmationEmail(detail);
+  } catch (emailError) {
+    console.error("[pos] order confirmation email threw:", emailError);
+  }
+
   return detail;
 }
