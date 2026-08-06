@@ -42,7 +42,8 @@ const SUPPORT_LINKS = [
 
 export async function StoreFooter() {
   const year = new Date().getFullYear();
-  const categories = await listCategoryLinks(6);
+  // The footer must never break a page — fall back to a static link on error.
+  const categories = await listCategoryLinks(6).catch(() => []);
 
   return (
     <footer className="border-border mt-24 border-t sm:mt-32">

@@ -310,6 +310,31 @@ body:has(.storefront) {
   animation: dope-marquee 24s linear infinite;
 }
 
+/* Premium skeleton shimmer for storefront loading states. */
+@keyframes dope-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.dope-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--secondary);
+}
+.dope-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.05),
+    transparent
+  );
+  animation: dope-shimmer 1.6s ease-in-out infinite;
+}
+
 /* A soft light beam that drifts across the announcement bar — the premium
  * moving highlight above the navigation. */
 @keyframes dope-lightsweep {
