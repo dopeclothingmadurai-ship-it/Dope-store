@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Check } from "lucide-react";
 
+import { IrlPerksCard } from "@/features/checkout/components/irl-perks-card";
 import { getOrderDetail } from "@/features/orders/queries";
 import { type OrderAddress } from "@/features/orders/types";
 import { Reveal } from "@/features/storefront/components/reveal";
@@ -33,10 +34,15 @@ export default async function CheckoutSuccessPage({
 
   const address = order.shipping_address as OrderAddress | null;
   const isPickup = order.fulfillment_type === "pickup";
-  const placedAt = new Date(order.placed_at).toLocaleDateString("en-IN", {
+  const placedDateObj = new Date(order.placed_at);
+  const placedAt = placedDateObj.toLocaleDateString("en-IN", {
     day: "numeric",
     month: "short",
     year: "numeric",
+  });
+  const placedTime = placedDateObj.toLocaleTimeString("en-IN", {
+    hour: "numeric",
+    minute: "2-digit",
   });
 
   return (
@@ -78,13 +84,15 @@ export default async function CheckoutSuccessPage({
                 className="flex items-start justify-between gap-4 py-4"
               >
                 <div className="min-w-0">
-                  <p className="text-foreground text-sm">{item.product_title}</p>
+                  <p className="text-foreground text-sm">
+                    {item.product_title}
+                  </p>
                   <p className="text-muted-foreground mt-0.5 text-xs">
                     {item.variant_label ? `${item.variant_label} · ` : ""}
                     Qty {item.quantity}
                   </p>
                 </div>
-                <span className="text-foreground text-sm tabular-nums whitespace-nowrap">
+                <span className="text-foreground text-sm whitespace-nowrap tabular-nums">
                   {formatPaise(item.subtotal)}
                 </span>
               </li>
@@ -124,8 +132,8 @@ export default async function CheckoutSuccessPage({
             </p>
             {isPickup ? (
               <p className="text-muted-foreground mt-3 text-sm leading-relaxed">
-                Collect from the nearest Dope Store once your order is confirmed.
-                Show your order number or confirmation email.
+                Collect from the nearest Dope Store once your order is
+                confirmed. Show your order number or confirmation email.
               </p>
             ) : (
               <p className="text-foreground/85 mt-3 text-sm leading-relaxed whitespace-pre-line">
@@ -144,6 +152,17 @@ export default async function CheckoutSuccessPage({
           </div>
         </div>
       </Reveal>
+
+      {isPickup && order.irl_perks_code ? (
+        <Reveal delay={0.15} className="mt-6">
+          <IrlPerksCard
+            code={order.irl_perks_code}
+            orderNumber={order.order_number}
+            orderDate={placedAt}
+            orderTime={placedTime}
+          />
+        </Reveal>
+      ) : null}
 
       <Reveal delay={0.2} className="mt-10 flex flex-wrap justify-center gap-4">
         <Link

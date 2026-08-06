@@ -289,6 +289,66 @@ export default async function OrderDetailPage({
                   </span>
                 }
               />
+              {order.razorpay_payment_id ? (
+                <InfoRow
+                  label="Razorpay payment"
+                  value={
+                    <span className="font-mono text-xs">
+                      {order.razorpay_payment_id}
+                    </span>
+                  }
+                />
+              ) : null}
+              {order.razorpay_order_id ? (
+                <InfoRow
+                  label="Razorpay order"
+                  value={
+                    <span className="font-mono text-xs">
+                      {order.razorpay_order_id}
+                    </span>
+                  }
+                />
+              ) : null}
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Fulfillment">
+            <div className="divide-border/60 divide-y">
+              <InfoRow
+                label="Method"
+                value={
+                  order.fulfillment_type === "pickup" ? (
+                    <span className="border-success/30 bg-success/10 text-success inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium">
+                      <span className="bg-success size-1.5 rounded-full" />
+                      Pickup
+                    </span>
+                  ) : (
+                    <span className="capitalize">Delivery</span>
+                  )
+                }
+              />
+              {order.fulfillment_type === "pickup" ? (
+                <>
+                  <InfoRow
+                    label="Pickup status"
+                    value={
+                      <span className="capitalize">
+                        {(order.pickup_status ?? "pending").replace(/_/g, " ")}
+                      </span>
+                    }
+                  />
+                  {order.irl_perks_code ? (
+                    <InfoRow
+                      label="IRL Perks code"
+                      value={
+                        <span className="font-mono text-sm font-semibold text-amber-400">
+                          {order.irl_perks_code}
+                        </span>
+                      }
+                    />
+                  ) : null}
+                </>
+              ) : null}
             </div>
           </SectionCard>
 

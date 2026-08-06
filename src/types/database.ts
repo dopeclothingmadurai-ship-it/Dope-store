@@ -475,6 +475,7 @@ export type Database = {
           fulfillment_type: string
           grand_total: number
           id: string
+          irl_perks_code: string | null
           order_number: string
           payment_method: string | null
           payment_status: Database["public"]["Enums"]["payment_status"]
@@ -507,6 +508,7 @@ export type Database = {
           fulfillment_type?: string
           grand_total?: number
           id?: string
+          irl_perks_code?: string | null
           order_number?: string
           payment_method?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
@@ -539,6 +541,7 @@ export type Database = {
           fulfillment_type?: string
           grand_total?: number
           id?: string
+          irl_perks_code?: string | null
           order_number?: string
           payment_method?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
