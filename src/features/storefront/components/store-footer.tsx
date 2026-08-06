@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { NewsletterForm } from "@/features/newsletter/components/newsletter-form";
 import { listCategoryLinks } from "@/features/storefront/queries";
+import { storeConfig } from "@/config/store";
 
 /** Inline Instagram glyph (kept local — not in this lucide-react build). */
 function InstagramIcon({ className }: { className?: string }) {
@@ -31,6 +32,8 @@ const SHOP_LINKS = [
 ];
 
 const SUPPORT_LINKS = [
+  { label: "Contact", href: "/contact" },
+  { label: "FAQ", href: "/faq" },
   { label: "Your account", href: "/account" },
   { label: "Wishlist", href: "/wishlist" },
   { label: "Terms of Service", href: "/terms" },
@@ -76,16 +79,16 @@ export async function StoreFooter() {
               Contact
             </p>
             <a
-              href="mailto:hello@dopestore.in"
+              href={`mailto:${storeConfig.email}`}
               className="text-foreground/80 hover:text-foreground w-fit text-sm transition-colors"
             >
-              hello@dopestore.in
+              {storeConfig.email}
             </a>
             <a
-              href="tel:+919000000000"
+              href={storeConfig.phoneHref}
               className="text-foreground/80 hover:text-foreground w-fit text-sm transition-colors"
             >
-              +91 90000 00000
+              {storeConfig.phone}
             </a>
             <p className="text-muted-foreground mt-2 text-xs leading-relaxed">
               Store pickup available at the nearest Dope Store — show your order
@@ -105,7 +108,7 @@ export async function StoreFooter() {
               <NewsletterForm />
             </div>
             <a
-              href="https://instagram.com"
+              href={storeConfig.social.instagram}
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground group mt-8 inline-flex items-center gap-2.5 text-[12px] font-medium tracking-[0.16em] uppercase transition-colors"
