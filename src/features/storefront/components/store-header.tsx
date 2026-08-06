@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Heart, Menu, ShoppingBag, User, X } from "lucide-react";
+import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 
 import { useWishlist, wishlistCount } from "@/features/wishlist/use-wishlist";
 import { cn } from "@/lib/utils";
@@ -140,6 +140,16 @@ export function StoreHeader() {
 
             {/* Right: account + cart */}
             <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">
+              <Link
+                href="/search"
+                aria-label="Search"
+                className="text-foreground/85 hover:text-foreground group p-1 transition-colors"
+              >
+                <Search
+                  className="size-5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:scale-110"
+                  strokeWidth={1.5}
+                />
+              </Link>
               <Link
                 href="/wishlist"
                 aria-label={`Wishlist${savedCount > 0 ? `, ${savedCount} saved` : ""}`}

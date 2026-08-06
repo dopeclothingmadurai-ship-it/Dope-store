@@ -140,6 +140,46 @@ export async function listStoreProducts(
   return toCards(db, limit ? inStock.slice(0, limit) : inStock);
 }
 
+/** Search active, in-stock products by title, plus matching categories. */
+export async function searchStore(query: string): Promise<{
+  products: StoreProductCard[];
+  categories: { name: string; slug: string }[];
+}> {
+  const q = query.trim();
+  if (q.length === 0) return { products: [], categories: [] };
+  const db = createAdminClient();
+  const escaped = q.replace(/[%,]/g, "");
+
+  const [productsResult, categoriesResult] = await Promise.all([
+    db
+      .from("products")
+      .select(CARD_COLUMNS)
+      .eq("status", "active")
+      .ilike("title", `%${escaped}%`)
+      .order("created_at", { ascending: false })
+      .limit(24),
+    db
+      .from("categories")
+      .select("name, slug")
+      .is("archived_at", null)
+      .ilike("name", `%${escaped}%`)
+      .order("position", { ascending: true })
+      .limit(6),
+  ]);
+  if (productsResult.error) throw fromPostgrestError(productsResult.error);
+  if (categoriesResult.error) throw fromPostgrestError(categoriesResult.error);
+
+  const soldOut = await soldOutIds(
+    db,
+    productsResult.data.map((product) => product.id),
+  );
+  const products = await toCards(
+    db,
+    productsResult.data.filter((product) => !soldOut.has(product.id)),
+  );
+  return { products, categories: categoriesResult.data };
+}
+
 /** Lightweight category links (name + slug) for nav/footer. */
 export async function listCategoryLinks(
   limit = 6,
