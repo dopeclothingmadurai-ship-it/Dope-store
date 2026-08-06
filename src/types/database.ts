@@ -480,6 +480,8 @@ export type Database = {
           payment_status: Database["public"]["Enums"]["payment_status"]
           pickup_status: string | null
           placed_at: string
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
           shipping_address: Json | null
           shipping_total: number
           staff_note: string | null
@@ -510,6 +512,8 @@ export type Database = {
           payment_status?: Database["public"]["Enums"]["payment_status"]
           pickup_status?: string | null
           placed_at?: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
           shipping_address?: Json | null
           shipping_total?: number
           staff_note?: string | null
@@ -540,6 +544,8 @@ export type Database = {
           payment_status?: Database["public"]["Enums"]["payment_status"]
           pickup_status?: string | null
           placed_at?: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
           shipping_address?: Json | null
           shipping_total?: number
           staff_note?: string | null
@@ -564,6 +570,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      pending_checkouts: {
+        Row: {
+          amount: number
+          created_at: string
+          payload: Json
+          razorpay_order_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          payload: Json
+          razorpay_order_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          payload?: Json
+          razorpay_order_id?: string
+        }
+        Relationships: []
       }
       product_media: {
         Row: {
@@ -928,6 +955,7 @@ export type Database = {
         Args: { p_ids: string[]; p_mode: string; p_value: number }
         Returns: number
       }
+      create_online_order: { Args: { p_payload: Json }; Returns: string }
       create_pos_order: { Args: { p_payload: Json }; Returns: string }
       duplicate_product: {
         Args: {

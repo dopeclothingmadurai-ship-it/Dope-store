@@ -170,16 +170,15 @@ export function CartDrawer() {
                     </span>
                   </div>
                   <p className="text-muted-foreground text-xs">
-                    Shipping and taxes calculated at checkout.
+                    Shipping calculated at checkout.
                   </p>
-                  <button
-                    type="button"
-                    disabled
-                    title="Secure checkout is coming soon"
-                    className="bg-foreground text-background h-12 w-full cursor-not-allowed text-[13px] font-medium tracking-[0.18em] uppercase opacity-70"
+                  <Link
+                    href="/checkout"
+                    onClick={() => setOpen(false)}
+                    className="bg-foreground text-background flex h-12 w-full items-center justify-center text-[13px] font-medium tracking-[0.18em] uppercase transition-opacity hover:opacity-90"
                   >
-                    Checkout — coming soon
-                  </button>
+                    Checkout
+                  </Link>
                 </div>
               </>
             )}

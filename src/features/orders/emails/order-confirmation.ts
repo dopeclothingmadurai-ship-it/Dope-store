@@ -70,12 +70,8 @@ function totalRow(label: string, value: string, strong = false): string {
 function fulfillmentBlock(data: OrderConfirmationData): string {
   if (data.fulfillmentType === "pickup") {
     return panel(
-      "Pick up at Dope Store",
-      `
-        <p style="margin:0 0 6px;color:${C.text};font-size:14px;line-height:1.6;">${escapeHtml(storeInfo.address)}</p>
-        <p style="margin:0 0 12px;color:${C.muted};font-size:13px;line-height:1.6;">${escapeHtml(storeInfo.hours)}</p>
-        <p style="margin:0;color:${C.muted};font-size:13px;line-height:1.6;">${escapeHtml(storeInfo.pickupInstructions)}</p>
-      `,
+      "Pick up at the nearest Dope Store",
+      `<p style="margin:0;color:${C.muted};font-size:13px;line-height:1.7;">${escapeHtml(storeInfo.pickupInstructions)}</p>`,
     );
   }
   return panel(

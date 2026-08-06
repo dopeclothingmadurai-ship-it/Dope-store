@@ -32,9 +32,6 @@ export const storeInfo = {
   name: SITE_NAME,
   url: SITE_URL,
   supportEmail: serverEnv.EMAIL_REPLY_TO ?? "support@dopestore.example",
-  // Physical store — shown on pickup orders.
-  address: "Dope Store, 12 MG Road, Bengaluru, Karnataka 560001, India",
-  hours: "Mon–Sat, 11:00 AM – 8:00 PM",
   pickupInstructions:
-    "Your order will be available once our team confirms it. Please bring your Order Number or this confirmation email when collecting your order.",
+    "Once your order has been confirmed, you can collect it from the nearest Dope Store by showing your Order Number or Order Confirmation Email.",
 } as const;

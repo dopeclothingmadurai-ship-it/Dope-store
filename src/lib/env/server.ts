@@ -10,8 +10,10 @@ import { z } from "zod";
  */
 const serverEnvSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
-  RAZORPAY_KEY_SECRET: z.string().min(1),
-  RAZORPAY_WEBHOOK_SECRET: z.string().min(1),
+  // Optional until provided — payment/webhook code checks presence and degrades
+  // gracefully, exactly like the email layer. Never hard-coded.
+  RAZORPAY_KEY_SECRET: z.string().optional(),
+  RAZORPAY_WEBHOOK_SECRET: z.string().optional(),
   // Email (Resend). Optional so the app runs before keys are provided — when
   // absent, transactional email is skipped (and logged), never blocking a flow.
   RESEND_API_KEY: z.string().optional(),
