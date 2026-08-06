@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { NewsletterForm } from "@/features/newsletter/components/newsletter-form";
+import { listCategoryLinks } from "@/features/storefront/queries";
 
 /** Inline Instagram glyph (kept local — not in this lucide-react build). */
 function InstagramIcon({ className }: { className?: string }) {
@@ -25,16 +26,20 @@ function InstagramIcon({ className }: { className?: string }) {
 const SHOP_LINKS = [
   { label: "All products", href: "/shop" },
   { label: "Categories", href: "/categories" },
+  { label: "Dope Archive", href: "/archive" },
   { label: "Testimonials", href: "/testimonials" },
 ];
 
-const COMPANY_LINKS = [
+const SUPPORT_LINKS = [
   { label: "Your account", href: "/account" },
-  { label: "Home", href: "/" },
+  { label: "Wishlist", href: "/wishlist" },
+  { label: "Terms of Service", href: "/terms" },
+  { label: "Privacy Policy", href: "/privacy" },
 ];
 
-export function StoreFooter() {
+export async function StoreFooter() {
   const year = new Date().getFullYear();
+  const categories = await listCategoryLinks(6);
 
   return (
     <footer className="border-border mt-24 border-t sm:mt-32">
@@ -46,13 +51,50 @@ export function StoreFooter() {
         </p>
       </div>
 
-      {/* Links + newsletter + social */}
+      {/* Columns */}
       <div className="mx-auto max-w-[1400px] px-5 py-16 sm:px-8 sm:py-20">
-        <div className="grid gap-12 md:grid-cols-4 lg:gap-16">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5 lg:gap-12">
           <FooterColumn title="Shop" links={SHOP_LINKS} />
-          <FooterColumn title="Company" links={COMPANY_LINKS} />
 
-          <div className="md:col-span-2 md:max-w-sm md:justify-self-end">
+          <FooterColumn
+            title="Categories"
+            links={
+              categories.length > 0
+                ? categories.map((category) => ({
+                    label: category.name,
+                    href: `/shop?category=${category.slug}`,
+                  }))
+                : [{ label: "Browse all", href: "/categories" }]
+            }
+          />
+
+          <FooterColumn title="Support" links={SUPPORT_LINKS} />
+
+          {/* Contact + pickup */}
+          <div className="flex flex-col gap-3.5">
+            <p className="text-muted-foreground/70 text-[11px] font-medium tracking-[0.2em] uppercase">
+              Contact
+            </p>
+            <a
+              href="mailto:hello@dopestore.in"
+              className="text-foreground/80 hover:text-foreground w-fit text-sm transition-colors"
+            >
+              hello@dopestore.in
+            </a>
+            <a
+              href="tel:+919000000000"
+              className="text-foreground/80 hover:text-foreground w-fit text-sm transition-colors"
+            >
+              +91 90000 00000
+            </a>
+            <p className="text-muted-foreground mt-2 text-xs leading-relaxed">
+              Store pickup available at the nearest Dope Store — show your order
+              number at collection.
+            </p>
+          </div>
+
+          {/* Newsletter + social */}
+          <div className="sm:col-span-2 lg:col-span-1">
             <p className="text-muted-foreground/70 text-[11px] font-medium tracking-[0.2em] uppercase">
               The Dope List
             </p>
@@ -85,14 +127,29 @@ export function StoreFooter() {
         </p>
       </div>
 
+      {/* Bottom bar */}
       <div className="border-border border-t">
         <div className="mx-auto flex max-w-[1400px] flex-col gap-3 px-5 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <p className="text-muted-foreground text-xs tracking-wide">
             © {year} Dope Store. All rights reserved.
           </p>
-          <p className="text-muted-foreground/70 text-xs tracking-[0.18em] uppercase">
-            Made in India
-          </p>
+          <div className="flex items-center gap-5">
+            <Link
+              href="/terms"
+              className="text-muted-foreground hover:text-foreground text-xs transition-colors"
+            >
+              Terms
+            </Link>
+            <Link
+              href="/privacy"
+              className="text-muted-foreground hover:text-foreground text-xs transition-colors"
+            >
+              Privacy
+            </Link>
+            <p className="text-muted-foreground/70 text-xs tracking-[0.18em] uppercase">
+              Made in India
+            </p>
+          </div>
         </div>
       </div>
     </footer>
@@ -113,7 +170,7 @@ function FooterColumn({
       </p>
       {links.map((link) => (
         <Link
-          key={link.href}
+          key={`${title}-${link.href}-${link.label}`}
           href={link.href}
           className="text-foreground/80 hover:text-foreground w-fit text-sm transition-colors"
         >

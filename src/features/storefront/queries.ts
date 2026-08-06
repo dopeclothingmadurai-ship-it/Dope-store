@@ -140,6 +140,21 @@ export async function listStoreProducts(
   return toCards(db, limit ? inStock.slice(0, limit) : inStock);
 }
 
+/** Lightweight category links (name + slug) for nav/footer. */
+export async function listCategoryLinks(
+  limit = 6,
+): Promise<{ name: string; slug: string }[]> {
+  const db = createAdminClient();
+  const { data, error } = await db
+    .from("categories")
+    .select("name, slug")
+    .is("archived_at", null)
+    .order("position", { ascending: true })
+    .limit(limit);
+  if (error) throw fromPostgrestError(error);
+  return data;
+}
+
 /** Active, sold-out products for the Dope Archive, newest first. */
 export async function listArchivedProducts(): Promise<StoreProductCard[]> {
   const db = createAdminClient();
