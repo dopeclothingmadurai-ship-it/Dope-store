@@ -80,7 +80,44 @@ async function toCards(
 }
 
 /**
- * Active products as storefront cards, newest first ("This Week at Dope").
+ * Product ids (from the given set) that are sold out — i.e. they have variants
+ * and every variant's available stock (quantity − reserved) is ≤ 0. These leave
+ * the normal collections and surface in the Dope Archive instead.
+ */
+async function soldOutIds(
+  db: ReturnType<typeof createAdminClient>,
+  productIds: string[],
+): Promise<Set<string>> {
+  if (productIds.length === 0) return new Set();
+  const { data, error } = await db
+    .from("product_variants")
+    .select("product_id, inventory(quantity, reserved_quantity)")
+    .in("product_id", productIds);
+  if (error) throw fromPostgrestError(error);
+
+  const available = new Map<string, number>();
+  const hasVariant = new Set<string>();
+  for (const variant of data) {
+    hasVariant.add(variant.product_id);
+    const stock =
+      (variant.inventory?.quantity ?? 0) -
+      (variant.inventory?.reserved_quantity ?? 0);
+    available.set(
+      variant.product_id,
+      (available.get(variant.product_id) ?? 0) + Math.max(0, stock),
+    );
+  }
+
+  const soldOut = new Set<string>();
+  for (const id of productIds) {
+    if (hasVariant.has(id) && (available.get(id) ?? 0) <= 0) soldOut.add(id);
+  }
+  return soldOut;
+}
+
+/**
+ * Active, in-stock products as storefront cards, newest first ("This Week at
+ * Dope"). Sold-out products are excluded (they live in the Dope Archive).
  * Optionally scoped to a single category (for the category-filtered shop).
  */
 export async function listStoreProducts(
@@ -91,11 +128,36 @@ export async function listStoreProducts(
   let query = db.from("products").select(CARD_COLUMNS).eq("status", "active");
   if (categoryId) query = query.eq("category_id", categoryId);
   query = query.order("created_at", { ascending: false });
-  if (limit) query = query.limit(limit);
 
   const { data: products, error } = await query;
   if (error) throw fromPostgrestError(error);
-  return toCards(db, products);
+
+  const soldOut = await soldOutIds(
+    db,
+    products.map((product) => product.id),
+  );
+  const inStock = products.filter((product) => !soldOut.has(product.id));
+  return toCards(db, limit ? inStock.slice(0, limit) : inStock);
+}
+
+/** Active, sold-out products for the Dope Archive, newest first. */
+export async function listArchivedProducts(): Promise<StoreProductCard[]> {
+  const db = createAdminClient();
+  const { data: products, error } = await db
+    .from("products")
+    .select(CARD_COLUMNS)
+    .eq("status", "active")
+    .order("created_at", { ascending: false });
+  if (error) throw fromPostgrestError(error);
+
+  const soldOut = await soldOutIds(
+    db,
+    products.map((product) => product.id),
+  );
+  return toCards(
+    db,
+    products.filter((product) => soldOut.has(product.id)),
+  );
 }
 
 /** A single active (non-archived) category by slug, or null. */
@@ -183,10 +245,15 @@ export async function listCuratedFits(limit = 12): Promise<StoreProductCard[]> {
     .select(CARD_COLUMNS)
     .eq("status", "active")
     .eq("show_in_curated_fits", true)
-    .order("created_at", { ascending: false })
-    .limit(limit);
+    .order("created_at", { ascending: false });
   if (error) throw fromPostgrestError(error);
-  return toCards(db, products);
+
+  const soldOut = await soldOutIds(
+    db,
+    products.map((product) => product.id),
+  );
+  const inStock = products.filter((product) => !soldOut.has(product.id));
+  return toCards(db, inStock.slice(0, limit));
 }
 
 /**
