@@ -10,6 +10,7 @@ import {
 } from "@/features/reviews";
 import { ProductCard } from "@/features/storefront/components/product-card";
 import { ProductDetail } from "@/features/storefront/components/product-detail";
+import { ProductStory } from "@/features/storefront/components/product-story";
 import {
   Reveal,
   RevealItem,
@@ -123,6 +124,8 @@ export default async function ProductPage({
       </nav>
 
       <ProductDetail product={product} />
+
+      <ProductStory description={product.description} brand={product.brand} />
 
       <ProductReviews
         productId={product.id}
