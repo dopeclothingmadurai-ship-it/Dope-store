@@ -4,8 +4,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Menu, ShoppingBag, User, X } from "lucide-react";
+import { Heart, Menu, ShoppingBag, User, X } from "lucide-react";
 
+import { useWishlist, wishlistCount } from "@/features/wishlist/use-wishlist";
 import { cn } from "@/lib/utils";
 
 import { CartDrawer } from "./cart-drawer";
@@ -40,6 +41,8 @@ export function StoreHeader() {
   const items = useCart((state) => state.items);
   const openCart = useCart((state) => state.setOpen);
   const count = mounted ? cartCount(items) : 0;
+  const wishlistItems = useWishlist((state) => state.items);
+  const savedCount = mounted ? wishlistCount(wishlistItems) : 0;
 
   useEffect(() => setMounted(true), []);
 
@@ -137,6 +140,21 @@ export function StoreHeader() {
 
             {/* Right: account + cart */}
             <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">
+              <Link
+                href="/wishlist"
+                aria-label={`Wishlist${savedCount > 0 ? `, ${savedCount} saved` : ""}`}
+                className="text-foreground/85 hover:text-foreground group relative p-1 transition-colors"
+              >
+                <Heart
+                  className="size-5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:scale-110"
+                  strokeWidth={1.5}
+                />
+                {savedCount > 0 ? (
+                  <span className="bg-gold text-background absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full text-[10px] font-semibold tabular-nums">
+                    {savedCount}
+                  </span>
+                ) : null}
+              </Link>
               <Link
                 href="/account"
                 aria-label="Your account"

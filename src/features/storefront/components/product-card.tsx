@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, ImageIcon } from "lucide-react";
 
+import { WishlistButton } from "@/features/wishlist/components/wishlist-button";
 import { formatPaise } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -71,6 +72,17 @@ export function ProductCard({
             Sale
           </span>
         ) : null}
+
+        <WishlistButton
+          product={{
+            slug: product.slug,
+            title: product.title,
+            price: product.price,
+            compareAtPrice: product.compareAtPrice,
+            imageUrl: product.imageUrl,
+          }}
+          className="bg-background/70 hover:bg-background absolute top-3 right-3 size-9 rounded-full opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100 focus-visible:opacity-100"
+        />
       </div>
 
       <div className="mt-4 flex items-start justify-between gap-3">

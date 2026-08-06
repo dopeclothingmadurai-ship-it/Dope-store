@@ -2,9 +2,10 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
-import { useState } from "react";
-import { Check, ImageIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Check, Heart, ImageIcon } from "lucide-react";
 
+import { useWishlist } from "@/features/wishlist/use-wishlist";
 import { formatPaise } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +14,12 @@ import { type StoreProductDetail } from "../types";
 
 export function ProductDetail({ product }: { product: StoreProductDetail }) {
   const add = useCart((state) => state.add);
+  const wishlistItems = useWishlist((state) => state.items);
+  const toggleWishlist = useWishlist((state) => state.toggle);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const saved =
+    mounted && wishlistItems.some((entry) => entry.slug === product.slug);
   const [activeImage, setActiveImage] = useState(0);
   const [size, setSize] = useState<string | null>(
     product.sizes.length === 0 ? "" : null,
@@ -186,6 +193,27 @@ export function ProductDetail({ product }: { product: StoreProductDetail }) {
             ) : (
               "Add to bag"
             )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              toggleWishlist({
+                slug: product.slug,
+                title: product.title,
+                price: product.price,
+                compareAtPrice: product.compareAtPrice,
+                imageUrl: product.images[0] ?? null,
+              })
+            }
+            aria-pressed={saved}
+            className="border-border hover:border-foreground text-foreground/85 hover:text-foreground mt-3 flex h-12 w-full items-center justify-center gap-2 border text-[12px] font-medium tracking-[0.18em] uppercase transition-colors"
+          >
+            <Heart
+              className={cn("size-4", saved && "fill-gold text-gold")}
+              strokeWidth={1.5}
+            />
+            {saved ? "Saved to wishlist" : "Save to wishlist"}
           </button>
 
           <div className="text-muted-foreground border-border mt-10 space-y-2 border-t pt-8 text-xs leading-relaxed">
