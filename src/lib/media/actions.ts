@@ -8,7 +8,7 @@ import { type Result } from "@/lib/result";
 import { type SignedUpload, createProductMediaUpload } from "./service";
 
 const uploadUrlSchema = z.object({
-  folder: z.enum(["products", "categories", "collections"]),
+  folder: z.enum(["products", "categories", "collections", "homepage"]),
   fileName: z.string().trim().min(1, "Missing file name").max(255),
 });
 

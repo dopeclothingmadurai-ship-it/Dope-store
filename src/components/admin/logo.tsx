@@ -19,7 +19,7 @@ export function DopeLogo({
   return (
     <span
       className={cn(
-        "relative block shrink-0 overflow-hidden rounded-xl shadow-lg ring-1 shadow-black/40 ring-white/10",
+        "relative flex shrink-0 items-center justify-center rounded-xl bg-white/[0.03] p-1.5 shadow-lg ring-1 shadow-black/40 ring-white/10",
         className,
       )}
       style={{ width: size, height: size }}
@@ -30,7 +30,7 @@ export function DopeLogo({
         width={size}
         height={size}
         priority={priority}
-        className="h-full w-full object-cover"
+        className="h-full w-full object-contain"
       />
     </span>
   );

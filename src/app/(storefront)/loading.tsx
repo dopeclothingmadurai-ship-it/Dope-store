@@ -10,7 +10,7 @@ export default function StorefrontLoading() {
           width={56}
           height={56}
           priority
-          className="size-12"
+          className="size-12 object-contain"
         />
         <span className="font-display text-2xl font-medium tracking-[0.34em] text-white">
           DOPE

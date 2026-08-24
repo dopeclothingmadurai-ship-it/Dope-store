@@ -13,4 +13,8 @@ export type StoreTestimonial = {
   verifiedPurchase: boolean;
 };
 
-export type { TestimonialFormValues } from "./schema";
+export type {
+  TestimonialFormValues,
+  TestimonialStatus,
+  CustomerTestimonialValues,
+} from "./schema";

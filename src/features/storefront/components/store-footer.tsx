@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { NewsletterForm } from "@/features/newsletter/components/newsletter-form";
@@ -121,14 +122,25 @@ export async function StoreFooter() {
         </div>
       </div>
 
-      {/* Oversized wordmark */}
-      <div className="mx-auto max-w-[1400px] overflow-hidden px-5 sm:px-8">
-        <p
-          aria-hidden
-          className="font-display text-foreground/[0.06] text-[24vw] leading-[0.8] font-medium tracking-tight select-none"
-        >
-          DOPE
+      {/* Oversized editorial wordmark — DOPE dominant, CULTURE as a coda, with
+          the brand mark anchored in the right corner. */}
+      <div className="mx-auto flex max-w-[1400px] items-end justify-between gap-4 overflow-hidden px-5 sm:px-8">
+        <p aria-hidden className="min-w-0 select-none leading-[0.8]">
+          <span className="font-display text-foreground/[0.06] text-[24vw] font-medium tracking-tight">
+            DOPE
+          </span>
+          <span className="font-display text-gold/25 ml-[0.06em] align-baseline text-[7vw] font-medium tracking-tight">
+            CULTURE
+          </span>
         </p>
+        <Image
+          src="/dope-logo.png"
+          alt="Dope Store"
+          width={80}
+          height={110}
+          className="mb-[2.5vw] size-11 shrink-0 object-contain opacity-70 sm:size-16 lg:size-20"
+        />
+        <span className="sr-only">Dope Culture</span>
       </div>
 
       {/* Bottom bar */}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
+import { getStoreHomepageContent } from "@/features/homepage";
 import { CampaignBanner } from "@/features/storefront/components/campaign-banner";
 import {
   EditorialSplit,
@@ -10,6 +11,7 @@ import { HomeCategories } from "@/features/storefront/components/home-categories
 import { HomeHero } from "@/features/storefront/components/home-hero";
 import { LifestyleGrid } from "@/features/storefront/components/lifestyle-grid";
 import { ProductRail } from "@/features/storefront/components/product-rail";
+import { PromoBanner } from "@/features/storefront/components/promo-banner";
 import {
   MaskReveal,
   Reveal,
@@ -48,17 +50,22 @@ const SPLIT_ROWS: SplitRow[] = [
 ];
 
 export default async function HomePage() {
-  const [thisWeek, categories, curated, testimonials] = await Promise.all([
-    listStoreProducts(10),
-    listStoreCategories(),
-    listCuratedFits(),
-    listPublishedTestimonials(),
-  ]);
+  const [thisWeek, categories, curated, testimonials, content] =
+    await Promise.all([
+      listStoreProducts(10),
+      listStoreCategories(),
+      listCuratedFits(),
+      listPublishedTestimonials(),
+      getStoreHomepageContent(),
+    ]);
 
   return (
     <>
-      {/* 1 · Hero */}
-      <HomeHero />
+      {/* 1 · Hero — admin-managed image, tagline, font, CTA */}
+      {content.hero.enabled ? <HomeHero hero={content.hero} /> : null}
+
+      {/* 1b · Promotional banner — cinematic seamless marquee beside the hero */}
+      {content.banner.enabled ? <PromoBanner banner={content.banner} /> : null}
 
       {/* 2 · Luxury story — editorial manifesto */}
       <StorySection />
@@ -135,18 +142,20 @@ export default async function HomePage() {
       {/* 8 · Lifestyle campaign — editorial photo grid */}
       <LifestyleGrid />
 
-      {/* 9 · Testimonials — staff-curated, from the admin */}
+      {/* 9 · Testimonials — customer voices, moderated in the admin */}
       {testimonials.length > 0 ? (
         <section id="testimonials" className="border-border border-t">
-          <div className="mx-auto max-w-[1400px] px-5 py-24 sm:px-8 sm:py-28">
-            <div className="mb-14 text-center">
+          <div className="mx-auto max-w-[1400px] px-5 py-24 sm:px-8 sm:py-32">
+            <div className="mx-auto mb-16 max-w-3xl text-center">
               <Reveal>
                 <p className="text-gold text-[11px] font-medium tracking-[0.3em] uppercase">
-                  Worn &amp; Reviewed
+                  The Culture Speaks
                 </p>
               </Reveal>
-              <h2 className="font-display mt-3 text-3xl font-light tracking-tight sm:text-5xl">
-                <MaskReveal delay={0.05}>What the crew says</MaskReveal>
+              <h2 className="font-editorial mt-5 text-3xl leading-[1.05] font-semibold tracking-tight sm:text-5xl lg:text-6xl">
+                <MaskReveal delay={0.05}>
+                  Feeding the culture, starving the hype
+                </MaskReveal>
               </h2>
             </div>
             <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -156,12 +165,18 @@ export default async function HomePage() {
                 </RevealItem>
               ))}
             </Stagger>
-            <Reveal className="mt-12 text-center">
+            <Reveal className="mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-center">
               <Link
                 href="/testimonials"
                 className="text-muted-foreground hover:text-foreground text-[12px] font-medium tracking-[0.16em] uppercase transition-colors"
               >
-                Read all reviews
+                Read all
+              </Link>
+              <Link
+                href="/testimonials#share"
+                className="text-gold hover:text-gold-soft text-[12px] font-medium tracking-[0.16em] uppercase transition-colors"
+              >
+                Share your experience
               </Link>
             </Reveal>
           </div>

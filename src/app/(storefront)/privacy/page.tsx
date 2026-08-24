@@ -62,8 +62,11 @@ export default function PrivacyPage() {
         </Section>
         <Section title="8. Contact">
           For any privacy question, email{" "}
-          <a href="mailto:hello@dopestore.in" className="text-gold underline">
-            hello@dopestore.in
+          <a
+            href="mailto:dopeclothingmadurai@gmail.com"
+            className="text-gold underline"
+          >
+            dopeclothingmadurai@gmail.com
           </a>
           .
         </Section>

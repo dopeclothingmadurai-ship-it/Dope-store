@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 import { type StoreTestimonial, type Testimonial } from "./types";
 
-/** All testimonials for the admin, in display order. */
+/** All testimonials for the admin, in display order (pending surfaced first). */
 export async function listTestimonials(): Promise<Testimonial[]> {
   const db = createAdminClient();
   const { data, error } = await db
@@ -17,9 +17,20 @@ export async function listTestimonials(): Promise<Testimonial[]> {
   return data;
 }
 
+/** Count testimonials awaiting moderation (admin badge). */
+export async function countPendingTestimonials(): Promise<number> {
+  const db = createAdminClient();
+  const { count, error } = await db
+    .from("testimonials")
+    .select("id", { head: true, count: "exact" })
+    .eq("status", "pending");
+  if (error) throw fromPostgrestError(error);
+  return count ?? 0;
+}
+
 /**
- * Published testimonials for the storefront — featured first, then manual
- * order, then newest. Only safe display fields are returned.
+ * Approved testimonials for the storefront — featured first, then manual order,
+ * then newest. Only safe display fields are returned.
  */
 export async function listPublishedTestimonials(
   limit = 12,
@@ -30,7 +41,7 @@ export async function listPublishedTestimonials(
     .select(
       "id, customer_name, review, rating, location, avatar_url, verified_purchase",
     )
-    .eq("status", "published")
+    .eq("status", "approved")
     .order("featured", { ascending: false })
     .order("position", { ascending: true })
     .order("created_at", { ascending: false })

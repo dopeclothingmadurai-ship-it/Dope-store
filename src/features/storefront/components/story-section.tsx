@@ -6,11 +6,17 @@ import { MaskReveal, Reveal } from "./reveal";
  */
 export function StorySection() {
   const lines = [
-    { text: "Designed for", muted: false },
-    { text: "those who don’t", muted: false },
-    { text: "chase fashion.", muted: true },
-    { text: "They define it.", muted: false },
-  ];
+    { text: "Unapologetic", tone: "fg" },
+    { text: "Unfiltered", tone: "fg" },
+    { text: "Pure Culture", tone: "muted" },
+    { text: "Dope Culture.", tone: "gold" },
+  ] as const;
+
+  const toneClass = {
+    fg: undefined,
+    muted: "text-muted-foreground",
+    gold: "text-gold",
+  } as const;
 
   return (
     <section className="border-border border-t">
@@ -23,10 +29,7 @@ export function StorySection() {
         <h2 className="font-display mt-8 max-w-5xl text-[10.5vw] leading-[1.02] font-light tracking-tight sm:mt-10 sm:text-6xl lg:text-[5.5rem] lg:leading-[1.04]">
           {lines.map((line, index) => (
             <span key={line.text} className="block overflow-hidden">
-              <MaskReveal
-                delay={index * 0.09}
-                className={line.muted ? "text-muted-foreground" : undefined}
-              >
+              <MaskReveal delay={index * 0.09} className={toneClass[line.tone]}>
                 {line.text}
               </MaskReveal>
             </span>

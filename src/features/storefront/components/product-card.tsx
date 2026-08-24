@@ -34,10 +34,13 @@ export function ProductCard({
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               priority={priority}
               className={cn(
-                "object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
-                "group-hover:scale-[1.06]",
-                product.hoverImageUrl &&
-                  "opacity-100 transition-[transform,opacity] group-hover:opacity-0",
+                "object-cover transition-[transform,opacity] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform",
+                // With a second image the primary gently zooms and dissolves;
+                // alone it simply zooms. Desktop hover only (no auto-switch on
+                // touch, where hover states don't apply).
+                product.hoverImageUrl
+                  ? "group-hover:scale-[1.04] group-hover:opacity-0"
+                  : "group-hover:scale-[1.06]",
               )}
             />
             {product.hoverImageUrl ? (
@@ -47,8 +50,9 @@ export function ProductCard({
                 aria-hidden
                 fill
                 unoptimized
+                loading="lazy"
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                className="scale-[1.06] object-cover opacity-0 transition-opacity duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:opacity-100"
+                className="scale-[1.08] object-cover opacity-0 transition-[transform,opacity] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform group-hover:scale-100 group-hover:opacity-100"
               />
             ) : null}
 

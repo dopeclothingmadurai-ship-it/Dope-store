@@ -35,7 +35,7 @@ const EMPTY: TestimonialFormValues = {
   avatarUrl: "",
   verifiedPurchase: true,
   featured: false,
-  status: "published",
+  status: "approved",
   position: 0,
 };
 
@@ -83,7 +83,11 @@ export function TestimonialFormDialog({
             avatarUrl: testimonial.avatar_url ?? "",
             verifiedPurchase: testimonial.verified_purchase,
             featured: testimonial.featured,
-            status: testimonial.status === "hidden" ? "hidden" : "published",
+            status:
+              testimonial.status === "approved" ||
+              testimonial.status === "rejected"
+                ? testimonial.status
+                : "pending",
             position: testimonial.position,
           }
         : EMPTY,
@@ -248,8 +252,8 @@ export function TestimonialFormDialog({
             control={control}
             name="status"
             render={({ field }) => (
-              <div className="grid grid-cols-2 gap-2">
-                {(["published", "hidden"] as const).map((option) => (
+              <div className="grid grid-cols-3 gap-2">
+                {(["pending", "approved", "rejected"] as const).map((option) => (
                   <button
                     key={option}
                     type="button"

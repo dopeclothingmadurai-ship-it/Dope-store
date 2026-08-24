@@ -10,7 +10,11 @@ import {
 } from "@/lib/storage";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export type MediaFolder = "products" | "categories" | "collections";
+export type MediaFolder =
+  | "products"
+  | "categories"
+  | "collections"
+  | "homepage";
 
 export type SignedUpload = {
   path: string;

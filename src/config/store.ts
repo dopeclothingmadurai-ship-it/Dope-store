@@ -7,28 +7,31 @@ export const storeConfig = {
   name: "Dope Store",
   tagline: "Considered clothing for the confident.",
 
-  email: "hello@dopestore.in",
-  phone: "+91 90000 00000",
-  phoneHref: "tel:+919000000000",
-  whatsappNumber: "919000000000",
+  email: "dopeclothingmadurai@gmail.com",
+  phone: "8754431324",
+  phoneHref: "tel:8754431324",
+  whatsappNumber: "918754431324",
 
+  // TODO: replace `line1` with the exact street address once confirmed.
   address: {
-    line1: "12 MG Road",
-    city: "Bengaluru",
-    state: "Karnataka",
-    pincode: "560001",
+    line1: "Dope Store Flagship",
+    city: "Madurai",
+    state: "Tamil Nadu",
+    pincode: "625001",
     country: "India",
   },
 
   hours: "Mon–Sat, 11:00 AM – 8:00 PM",
 
-  // Optional Google Maps embed src (leave empty to hide the map).
-  mapsEmbedSrc: "",
+  // Google Maps embed src. City-level Madurai by default (keyless embed) —
+  // replace with the exact store's "Embed a map" src when available. Leave
+  // empty to fall back to the styled "Visit us" placeholder.
+  mapsEmbedSrc: "https://www.google.com/maps?q=Madurai,Tamil+Nadu&output=embed",
 
   social: {
     instagram: "https://instagram.com/dopestore",
     facebook: "https://facebook.com/dopestore",
-    whatsapp: "https://wa.me/919000000000",
+    whatsapp: "https://wa.me/918754431324",
   },
 } as const;
 

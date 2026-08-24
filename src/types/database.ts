@@ -297,6 +297,114 @@ export type Database = {
         }
         Relationships: []
       }
+      franchises: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string
+          email: string | null
+          id: string
+          location: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      homepage_content: {
+        Row: {
+          announcement_direction: string
+          announcement_enabled: boolean
+          announcement_messages: Json
+          announcement_speed: number
+          banner_countdown_enabled: boolean
+          banner_countdown_ends_at: string | null
+          banner_direction: string
+          banner_enabled: boolean
+          banner_offer_text: string
+          banner_speed: number
+          banner_text: string
+          hero_cta_href: string
+          hero_cta_label: string
+          hero_enabled: boolean
+          hero_image_url: string | null
+          hero_images: Json
+          hero_tagline: string
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          announcement_direction?: string
+          announcement_enabled?: boolean
+          announcement_messages?: Json
+          announcement_speed?: number
+          banner_countdown_enabled?: boolean
+          banner_countdown_ends_at?: string | null
+          banner_direction?: string
+          banner_enabled?: boolean
+          banner_offer_text?: string
+          banner_speed?: number
+          banner_text?: string
+          hero_cta_href?: string
+          hero_cta_label?: string
+          hero_enabled?: boolean
+          hero_image_url?: string | null
+          hero_images?: Json
+          hero_tagline?: string
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          announcement_direction?: string
+          announcement_enabled?: boolean
+          announcement_messages?: Json
+          announcement_speed?: number
+          banner_countdown_enabled?: boolean
+          banner_countdown_ends_at?: string | null
+          banner_direction?: string
+          banner_enabled?: boolean
+          banner_offer_text?: string
+          banner_speed?: number
+          banner_text?: string
+          hero_cta_href?: string
+          hero_cta_label?: string
+          hero_enabled?: boolean
+          hero_image_url?: string | null
+          hero_images?: Json
+          hero_tagline?: string
+          id?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       inventory: {
         Row: {
           location: string
@@ -908,12 +1016,15 @@ export type Database = {
           customer_name: string
           featured: boolean
           id: string
+          is_sample: boolean
           location: string | null
           position: number
           rating: number
           review: string
           status: string
+          submitted_by_customer: boolean
           updated_at: string
+          user_id: string | null
           verified_purchase: boolean
         }
         Insert: {
@@ -922,12 +1033,15 @@ export type Database = {
           customer_name: string
           featured?: boolean
           id?: string
+          is_sample?: boolean
           location?: string | null
           position?: number
           rating?: number
           review: string
           status?: string
+          submitted_by_customer?: boolean
           updated_at?: string
+          user_id?: string | null
           verified_purchase?: boolean
         }
         Update: {
@@ -936,12 +1050,15 @@ export type Database = {
           customer_name?: string
           featured?: boolean
           id?: string
+          is_sample?: boolean
           location?: string | null
           position?: number
           rating?: number
           review?: string
           status?: string
+          submitted_by_customer?: boolean
           updated_at?: string
+          user_id?: string | null
           verified_purchase?: boolean
         }
         Relationships: []

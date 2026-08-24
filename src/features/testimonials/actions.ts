@@ -3,11 +3,17 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { requireCustomer } from "@/lib/auth/customer";
+import { runAction } from "@/lib/errors";
 import { runStaffAction } from "@/lib/auth/guard";
 import { type Result } from "@/lib/result";
 import { uuidSchema } from "@/lib/validation/common";
 
-import { testimonialFormSchema } from "./schema";
+import {
+  customerTestimonialSchema,
+  testimonialFormSchema,
+  testimonialStatusSchema,
+} from "./schema";
 import * as service from "./service";
 import { type Testimonial } from "./types";
 
@@ -16,6 +22,7 @@ const ADMIN_PATH = "/admin/testimonials";
 /** Revalidate the admin list and the storefront (home + testimonials). */
 function revalidate() {
   revalidatePath(ADMIN_PATH);
+  revalidatePath("/admin/content");
   revalidatePath("/", "layout");
 }
 
@@ -49,7 +56,7 @@ export async function setTestimonialStatusAction(
 ): Promise<Result<Testimonial>> {
   return runStaffAction(async () => {
     const testimonialId = uuidSchema.parse(id);
-    const nextStatus = z.enum(["published", "hidden"]).parse(status);
+    const nextStatus = testimonialStatusSchema.parse(status);
     const testimonial = await service.setTestimonialStatus(
       testimonialId,
       nextStatus,
@@ -77,5 +84,25 @@ export async function reorderTestimonialsAction(
     await service.reorderTestimonials(orderedIds);
     revalidate();
     return null;
+  });
+}
+
+/**
+ * A signed-in customer submits their own testimonial. Stored as `pending` — it
+ * never appears publicly until an admin approves it.
+ */
+export async function submitTestimonialAction(
+  input: unknown,
+): Promise<Result<{ status: "pending" }>> {
+  return runAction(async () => {
+    const customer = await requireCustomer();
+    const values = customerTestimonialSchema.parse(input);
+    await service.submitCustomerTestimonial({
+      userId: customer.user.id,
+      input: values,
+    });
+    revalidatePath(ADMIN_PATH);
+    revalidatePath("/admin/content");
+    return { status: "pending" as const };
   });
 }

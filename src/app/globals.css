@@ -297,17 +297,30 @@ body:has(.storefront) {
   animation: dope-sweep 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
-/* Seamless editorial marquee — two identical tracks translated in tandem. */
+/* Seamless editorial marquee — measurement-free and mathematically gap-free.
+ * The viewport holds TWO identical groups; each group is `min-width:100%`, so a
+ * group can NEVER be narrower than the viewport (this is what kills the blank
+ * gap). Each group animates translateX(0 → -100%) of its OWN width, so as one
+ * group scrolls fully out, the identical second group has taken its place — an
+ * infinite loop with no visible reset. Speed via `--marquee-duration`;
+ * direction flips with `--reverse`. GPU-only transform. */
 @keyframes dope-marquee {
   from {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
   to {
-    transform: translateX(-100%);
+    transform: translate3d(-100%, 0, 0);
   }
 }
-.dope-marquee {
-  animation: dope-marquee 24s linear infinite;
+.dope-marquee-group {
+  animation: dope-marquee var(--marquee-duration, 24s) linear infinite;
+  will-change: transform;
+}
+.dope-marquee-group--reverse {
+  animation-direction: reverse;
+}
+.dope-marquee-viewport:hover .dope-marquee-group--pausable {
+  animation-play-state: paused;
 }
 
 /* Premium skeleton shimmer for storefront loading states. */
@@ -333,6 +346,47 @@ body:has(.storefront) {
     transparent
   );
   animation: dope-shimmer 1.6s ease-in-out infinite;
+}
+
+/* ── Navbar brand reveal (Curate-style) ─────────────────────────────────────
+ * On the homepage the DOPE STORE wordmark reveals out of the navigation as the
+ * hero scrolls away: a clip-wipe from below + a slight rise + a subtle settle
+ * in scale, driven by the `--nav-reveal` custom property (0 → 1) that a
+ * rAF-batched scroll handler writes directly to the element (no React re-render
+ * per frame). The logo mark beside it never animates — it stays visible
+ * throughout. The wordmark keeps its layout box at all times (only clip /
+ * transform / opacity change), so there is never a layout shift or width jump.
+ * Reduced-motion users always see the finished, revealed state. */
+.nav-wordmark {
+  display: inline-block;
+  transform-origin: left center;
+  opacity: var(--nav-reveal, 1);
+  clip-path: inset(0 0 calc((1 - var(--nav-reveal, 1)) * 105%) 0);
+  transform: translateY(calc((1 - var(--nav-reveal, 1)) * 0.42em))
+    scale(calc(0.94 + 0.06 * var(--nav-reveal, 1)));
+  will-change: clip-path, transform, opacity;
+}
+/* The logo is the brand anchor: larger at the top of the homepage, settling to
+ * its resting size as the wordmark reveals on scroll. Pure transform (GPU),
+ * never a layout change, so the bar height and centring never shift. */
+.nav-logo {
+  /* At the top (reveal 0) the mark is larger and nudged toward centre; as the
+   * page scrolls it settles left into its resting size beside the wordmark. */
+  transform: translateX(calc((1 - var(--nav-reveal, 1)) * 3.1em))
+    scale(calc(1 + (1 - var(--nav-reveal, 1)) * 0.5));
+  transform-origin: center;
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-wordmark {
+    clip-path: none;
+    transform: none;
+    opacity: 1;
+  }
+  .nav-logo {
+    transform: none;
+  }
 }
 
 /* A soft light beam that drifts across the announcement bar — the premium
@@ -519,15 +573,16 @@ body:has(.storefront) {
   inset: 0;
   z-index: 2;
   border-radius: inherit;
-  padding: 1.25px;
+  /* Slightly thicker, more present edge — refined, not neon. */
+  padding: 1.75px;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.45s ease;
   background: radial-gradient(
-    220px circle at var(--x) var(--y),
-    rgba(216, 194, 153, 0.9),
-    rgba(194, 164, 104, 0.25) 30%,
-    rgba(216, 194, 153, 0) 65%
+    280px circle at var(--x) var(--y),
+    rgba(216, 194, 153, 1),
+    rgba(194, 164, 104, 0.35) 32%,
+    rgba(216, 194, 153, 0) 68%
   );
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
@@ -537,6 +592,14 @@ body:has(.storefront) {
 }
 .border-glow:hover::before {
   opacity: 1;
+}
+/* Touch devices have no cursor: when a tile is centered in the viewport
+ * (`is-revealed`, set by IntersectionObserver) show a gentle static top-edge
+ * glow so the premium edge still reads — never permanent clutter. */
+.border-glow.is-revealed::before {
+  --x: 50%;
+  --y: 0%;
+  opacity: 0.85;
 }
 
 /* ── SpotlightCard — champagne spotlight follows the cursor, glass lift ── */

@@ -13,6 +13,10 @@ export const metadata: Metadata = {
 };
 
 export default function ContactPage() {
+  const mapsDirectionsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    formatStoreAddress(),
+  )}`;
+
   return (
     <div className="mx-auto max-w-[1400px] px-5 pt-28 pb-24 sm:px-8 sm:pt-36 sm:pb-32">
       <div className="mb-14 max-w-2xl sm:mb-20">
@@ -93,17 +97,61 @@ export default function ContactPage() {
             </div>
           </div>
 
+        </Reveal>
+      </div>
+
+      {/* Premium, config-driven store map */}
+      <Reveal className="mt-20 sm:mt-28">
+        <div className="mb-6 flex items-end justify-between gap-4">
+          <div>
+            <p className="text-gold text-[11px] font-medium tracking-[0.3em] uppercase">
+              Find us
+            </p>
+            <h2 className="font-display mt-2 text-2xl font-light tracking-tight sm:text-3xl">
+              {storeConfig.address.city}, {storeConfig.address.state}
+            </h2>
+          </div>
+          <a
+            href={mapsDirectionsHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground hover:text-foreground hidden text-[12px] font-medium tracking-[0.16em] uppercase transition-colors sm:inline"
+          >
+            Get directions
+          </a>
+        </div>
+
+        <div className="border-border relative aspect-[16/10] w-full overflow-hidden rounded-lg border sm:aspect-[21/7]">
           {storeConfig.mapsEmbedSrc ? (
             <iframe
               title="Dope Store location"
               src={storeConfig.mapsEmbedSrc}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              className="border-border aspect-video w-full rounded-lg border grayscale"
+              className="h-full w-full grayscale transition-[filter] duration-500 hover:grayscale-0"
             />
-          ) : null}
-        </Reveal>
-      </div>
+          ) : (
+            <div className="from-secondary/40 to-background flex h-full w-full flex-col items-center justify-center bg-gradient-to-br text-center">
+              <MapPin
+                className="text-gold/60 size-8"
+                strokeWidth={1.5}
+                aria-hidden
+              />
+              <p className="text-foreground mt-4 text-sm font-medium">
+                {formatStoreAddress()}
+              </p>
+              <a
+                href={mapsDirectionsHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gold hover:text-gold-soft mt-3 text-[12px] font-medium tracking-[0.16em] uppercase transition-colors"
+              >
+                Open in Google Maps
+              </a>
+            </div>
+          )}
+        </div>
+      </Reveal>
     </div>
   );
 }

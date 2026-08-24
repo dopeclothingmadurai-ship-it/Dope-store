@@ -1,7 +1,9 @@
 import {
   type LucideIcon,
   BarChart3,
+  Building2,
   LayoutDashboard,
+  LayoutTemplate,
   MessageSquareQuote,
   Package,
   Layers,
@@ -62,6 +64,7 @@ export const ADMIN_NAV: AdminNavGroup[] = [
   {
     label: "Marketing",
     items: [
+      { label: "Homepage", href: "/admin/content", icon: LayoutTemplate },
       { label: "Coupons", href: "/admin/coupons", icon: Ticket },
       {
         label: "Testimonials",
@@ -72,7 +75,10 @@ export const ADMIN_NAV: AdminNavGroup[] = [
   },
   {
     label: "Point of Sale",
-    items: [{ label: "Offline Billing", href: "/admin/pos", icon: Store }],
+    items: [
+      { label: "Offline Billing", href: "/admin/pos", icon: Store },
+      { label: "Franchises", href: "/admin/franchise", icon: Building2 },
+    ],
   },
   {
     label: "System",

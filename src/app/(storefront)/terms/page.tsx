@@ -70,8 +70,11 @@ export default function TermsPage() {
         </Section>
         <Section title="10. Contact">
           Questions? Email us at{" "}
-          <a href="mailto:hello@dopestore.in" className="text-gold underline">
-            hello@dopestore.in
+          <a
+            href="mailto:dopeclothingmadurai@gmail.com"
+            className="text-gold underline"
+          >
+            dopeclothingmadurai@gmail.com
           </a>
           .
         </Section>
