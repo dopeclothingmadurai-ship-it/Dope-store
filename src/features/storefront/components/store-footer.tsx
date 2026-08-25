@@ -122,10 +122,18 @@ export async function StoreFooter() {
         </div>
       </div>
 
-      {/* Oversized editorial wordmark — DOPE dominant, CULTURE as a coda, with
-          the brand mark anchored in the right corner. */}
-      <div className="mx-auto flex max-w-[1400px] items-end justify-between gap-4 overflow-hidden px-5 sm:px-8">
-        <p aria-hidden className="min-w-0 select-none leading-[0.8]">
+      {/* Brand mark, then the oversized editorial wordmark — DOPE dominant,
+          CULTURE as a coda. The logo sits in the upper-left with clear breathing
+          room above the watermark, so the two never overlap at any breakpoint. */}
+      <div className="mx-auto max-w-[1400px] overflow-hidden px-5 sm:px-8">
+        <Image
+          src="/dope-logo-full.png"
+          alt="Dope Store"
+          width={557}
+          height={560}
+          className="mb-8 h-14 w-auto rounded-lg opacity-90 sm:mb-10 sm:h-16 lg:h-20"
+        />
+        <p aria-hidden className="select-none leading-[0.8]">
           <span className="font-display text-foreground/[0.06] text-[24vw] font-medium tracking-tight">
             DOPE
           </span>
@@ -133,13 +141,6 @@ export async function StoreFooter() {
             CULTURE
           </span>
         </p>
-        <Image
-          src="/dope-logo.png"
-          alt="Dope Store"
-          width={80}
-          height={110}
-          className="mb-[2.5vw] size-11 shrink-0 object-contain opacity-70 sm:size-16 lg:size-20"
-        />
         <span className="sr-only">Dope Culture</span>
       </div>
 
